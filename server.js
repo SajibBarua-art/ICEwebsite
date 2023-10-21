@@ -2,25 +2,18 @@
 const express = require('express');
 const app = express();
 const cors = require("cors");
-const DATABASE_NAME = 'sajibbaruanstu';
-const DATABASE_PASSWORD = 'alphaBitaGama';
+const port = process.env.PORT || 5000;
 
-console.log("App listen at port 5000");
+require('dotenv').config();
 app.use(express.json());
 app.use(cors());
 app.get("/", (req, resp) => {
- 
     resp.send("App is Working");
-    // You can check backend is working or not by 
-    // entering http://loacalhost:5000
-     
-    // If you see App is working means
-    // backend working properly
 });
 
 // Connect to the database
 const mongoose = require('mongoose');
-mongoose.connect(`mongodb+srv://${DATABASE_NAME}:${DATABASE_PASSWORD}@cluster0.smd1bmx.mongodb.net/?retryWrites=true&w=majority`, {
+mongoose.connect(`mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.smd1bmx.mongodb.net/?retryWrites=true&w=majority`, {
     dbName: 'routine',
     useNewUrlParser: true,
     useUnifiedTopology: true
@@ -345,4 +338,6 @@ app.get("/room", async (req, resp) => {
 // create routine randomly
 
 
-app.listen(5000);
+app.listen(port, () => {
+    console.log(`Example app listening at http://localhost:${port}`)
+})

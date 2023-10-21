@@ -1,3 +1,2 @@
 node_modules
-DATABASE_NAME
-DATABASE_PASSWORD
+.env
