@@ -45,6 +45,11 @@ const teacherSchema = new mongoose.Schema({
         required: true,
         unique: true
     },
+    courses: {
+        type: Array,
+        required: false,
+        default: []
+    },
     date: {
         type: Date,
         default: Date.now,
@@ -80,6 +85,33 @@ app.get("/teachers", async (req, resp) => {
         resp.status(500).send("Internal Server Error");
     }
 });
+
+// to update courses of a teacher
+app.put("/teachers/:teacherCode/courses", async (req, resp) => {
+    try {
+        const teacherCode = req.params.teacherCode;
+        const coursesToUpdate = req.body.courses; // Assuming you send an array of courses in the request body
+
+        // Find the teacher by ID
+        const teacher = await Teacher.findOne({ teacherCode });
+
+        if (!teacher) {
+            return resp.status(404).send("Teacher not found");
+        }
+
+        // Update the courses field
+        teacher.courses = coursesToUpdate;
+
+        // Save the updated teacher
+        const updatedTeacher = await teacher.save();
+
+        resp.json(updatedTeacher);
+    } catch (error) {
+        console.error("An error occurred in updating teacher courses:", error);
+        resp.status(500).send("Internal Server Error");
+    }
+});
+
 
 // course details
 const courseDetailsSchema = new mongoose.Schema({
@@ -134,47 +166,6 @@ app.get("/courseDetails", async (req, resp) => {
         resp.json(users); // Send the users as a JSON response
     } catch (error) {
         console.error("An error occurred in CourseDetails get function:", error);
-        resp.status(500).send("Internal Server Error");
-    }
-});
-
-// teacher course database
-const teacherCourseSchema = new mongoose.Schema({
-    teacherCode: {
-        type: String,
-        required: true
-    },
-    courseCode: {
-        type: String,
-        required: true
-    }
-});
-const TeacherCourse = mongoose.model('teacherCourse', teacherCourseSchema);
- 
-app.post("/teacherCourse", async (req, resp) => {
-    try {
-        const teacherCourse = new TeacherCourse(req.body);
-        let result = await teacherCourse.save();
-        result = result.toObject();
-        if (result) {
-            resp.send(req.body);
-            console.log(result);
-        } else {
-            console.log("teacherCourse already registered");
-        }
- 
-    } catch (e) {
-        resp.status(400).send("!!! Error in teacherCourse register panel !!!\n" + e);
-    }
-});
-
-app.get("/teacherCourse", async (req, resp) => {
-    try {
-        // Retrieve all TeacherCourse from the MongoDB database
-        const users = await TeacherCourse.find({});
-        resp.json(users); // Send the users as a JSON response
-    } catch (error) {
-        console.error("An error occurred in TeacherCourse get function:", error);
         resp.status(500).send("Internal Server Error");
     }
 });
