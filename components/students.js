@@ -24,6 +24,14 @@ const studentSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
+    ID: {
+        type: String,
+        required: true
+    },
+    Session: {
+        type: String,
+        required: true
+    },
     date: {
         type: Date,
         default: Date.now,

@@ -1,0 +1,191 @@
+[
+    {
+      "_id": "6534bb2412c60d7fcc464d33",
+      "firstName": "Mohammad Amzad",
+      "lastName": "Hossain",
+      "email": "amzad@nstu.edu.bd",
+      "teacherCode": "MAH",
+      "courses": [
+        "ICE-1201",
+        "ICE-3201",
+        "ICE-1202"
+      ],
+      "date": "2023-10-22T06:03:16.573Z",
+      "__v": 2
+    },
+    {
+      "_id": "6534bbab12c60d7fcc464d35",
+      "firstName": "K. M. Aslam",
+      "lastName": "Uddin",
+      "email": "aslam@nstu.edu.bd",
+      "teacherCode": "KMAU",
+      "courses": [
+        "ICE-1203",
+        "ICE-2203",
+        "ICE-2204"
+      ],
+      "date": "2023-10-22T06:05:31.008Z",
+      "__v": 2
+    },
+    {
+      "_id": "6535f8df6dfd1ae50f7568a0",
+      "firstName": "Sultana Jahan",
+      "lastName": "Soheli",
+      "email": "a",
+      "teacherCode": "SJS",
+      "courses": [
+        "ICE-4212",
+        "ICE-4211",
+        "ICE-3202",
+        "ICE-3204",
+        "ICE-3203"
+      ],
+      "date": "2023-10-23T04:38:55.126Z",
+      "__v": 1
+    },
+    {
+      "_id": "6535f91e6dfd1ae50f7568a2",
+      "firstName": "Dr. Md. Masudur",
+      "lastName": "Rahman",
+      "email": "b",
+      "teacherCode": "MMR",
+      "courses": [
+        "ICE-3209",
+        "ICE-4207",
+        "ICE-4208",
+        "ICE-3210"
+      ],
+      "date": "2023-10-23T04:39:58.484Z",
+      "__v": 1
+    },
+    {
+      "_id": "6535f9a91ef41f759c1b4a21",
+      "firstName": "Tanvir",
+      "lastName": "Zaman Khan",
+      "email": "c",
+      "teacherCode": "TZK",
+      "courses": [
+        "ICE-2209",
+        "ICE-4201",
+        "ICE-4202"
+      ],
+      "date": "2023-10-23T04:42:17.983Z",
+      "__v": 1
+    },
+    {
+      "_id": "6535f9cb1ef41f759c1b4a23",
+      "firstName": "Md. Mahbubul",
+      "lastName": "Alam",
+      "email": "d",
+      "teacherCode": "MMA",
+      "courses": [
+        "ICE-2201",
+        "ICE-2202",
+        "ICE-4205",
+        "ICE-4206",
+        "ICE-3207"
+      ],
+      "date": "2023-10-23T04:42:51.759Z",
+      "__v": 1
+    },
+    {
+      "_id": "6535f9f31ef41f759c1b4a25",
+      "firstName": "Md. Sabbir",
+      "lastName": "Ejaz",
+      "email": "e",
+      "teacherCode": "MSE",
+      "courses": [
+        "ICE-1205",
+        "ICE-1206",
+        "ICE-2207",
+        "ICE-2208"
+      ],
+      "date": "2023-10-23T04:43:31.274Z",
+      "__v": 1
+    },
+    {
+      "_id": "6535fa191ef41f759c1b4a27",
+      "firstName": "Mohammad Kamrul",
+      "lastName": "Hossain",
+      "email": "f",
+      "teacherCode": "MKH",
+      "courses": [
+        "ICE-2205",
+        "ICE-3205",
+        "ICE-2206",
+        "ICE-3206"
+      ],
+      "date": "2023-10-23T04:44:09.786Z",
+      "__v": 1
+    },
+    {
+      "_id": "6535fa601ef41f759c1b4a2b",
+      "firstName": "Md. Jamal",
+      "lastName": "Hossain",
+      "email": "g",
+      "teacherCode": "MJH",
+      "courses": [
+        "MATH-2211",
+        "ICE-4203",
+        "ICE-4204"
+      ],
+      "date": "2023-10-23T04:45:20.333Z",
+      "__v": 1
+    },
+    {
+      "_id": "6535fa8c1ef41f759c1b4a2d",
+      "firstName": "Liton Chandra",
+      "lastName": "Bhoumik",
+      "email": "h",
+      "teacherCode": "LCB",
+      "courses": [],
+      "date": "2023-10-23T04:46:04.465Z",
+      "__v": 0
+    },
+    {
+      "_id": "6535faad1ef41f759c1b4a2f",
+      "firstName": "Mahbubur",
+      "lastName": "Rahman",
+      "email": "i",
+      "teacherCode": "MR",
+      "courses": [],
+      "date": "2023-10-23T04:46:37.776Z",
+      "__v": 0
+    },
+    {
+      "_id": "6535fad11ef41f759c1b4a31",
+      "firstName": "Trina",
+      "lastName": "Saha",
+      "email": "j",
+      "teacherCode": "TS",
+      "courses": [
+        "HUM-1207"
+      ],
+      "date": "2023-10-23T04:47:13.584Z",
+      "__v": 1
+    },
+    {
+      "_id": "6535faeb1ef41f759c1b4a33",
+      "firstName": "Md. Nijam",
+      "lastName": "Uddin",
+      "email": "k",
+      "teacherCode": "MNU",
+      "courses": [
+        "BLWS"
+      ],
+      "date": "2023-10-23T04:47:39.305Z",
+      "__v": 1
+    },
+    {
+      "_id": "6535fb071ef41f759c1b4a35",
+      "firstName": "Md. Rifat",
+      "lastName": "Hossain",
+      "email": "z",
+      "teacherCode": "MRH",
+      "courses": [
+        "MATH-1211"
+      ],
+      "date": "2023-10-23T04:48:07.628Z",
+      "__v": 1
+    }
+  ]

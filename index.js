@@ -25,28 +25,21 @@ mongoose.connect(`mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cl
     console.error('Error connecting to the database:', err);
 });
 
-// database for teachers information
+// Import your data and routes
 const teacherRoutes = require('./components/teachers');
-app.use('/teachers', teacherRoutes);
-
-// database for course details
-const courseDetailsRoutes = require('./components/courseDetails.js');
-app.use('/courseDetails', courseDetailsRoutes);
-
-// database for students information
+const courseDetailsRoutes = require('./components/courseDetails');
 const studentRoutes = require('./components/students');
-app.use('/students', studentRoutes);
-
-// database for time-slot
 const timeSlotRoutes = require('./components/timeSlot');
-app.use('/timeSlot', timeSlotRoutes);
-
-// database for room
 const roomRoutes = require('./components/room');
+const generateRandomRoutine = require('./components/generateRandomRoutine');
+
+// Use the routes for data management
+app.use('/teachers', teacherRoutes);
+app.use('/courseDetails', courseDetailsRoutes);
+app.use('/students', studentRoutes);
+app.use('/timeSlot', timeSlotRoutes);
 app.use('/room', roomRoutes);
-
-// create routine randomly
-
+app.use('/generateRandomRoutine', generateRandomRoutine);
 
 app.listen(port, () => {
     console.log(`Example app listening at http://localhost:${port}`)

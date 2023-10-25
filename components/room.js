@@ -3,7 +3,7 @@ const app = express.Router();
 const mongoose = require('mongoose');
 
 const roomSchema = new mongoose.Schema({
-    class: Array,
+    theory: Array,
     lab: Object
 });
 
@@ -11,10 +11,10 @@ const Room = mongoose.model('room', roomSchema);
 const createRoom = async () => {
     try {
         const newRoom = new Room({
-            class: ['809', '810'],
+            theory: ['809', '810'],
             lab: {
                 computer: ['808', '812'],
-                electrical: '813'
+                electrical: ['813']
             }
         });
 
