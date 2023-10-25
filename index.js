@@ -32,6 +32,7 @@ const studentRoutes = require('./components/students');
 const timeSlotRoutes = require('./components/timeSlot');
 const roomRoutes = require('./components/room');
 const generateRandomRoutine = require('./components/generateRandomRoutine');
+const routineOperation = require('./components/routineOperation');
 
 // Use the routes for data management
 app.use('/teachers', teacherRoutes);
@@ -40,6 +41,7 @@ app.use('/students', studentRoutes);
 app.use('/timeSlot', timeSlotRoutes);
 app.use('/room', roomRoutes);
 app.use('/generateRandomRoutine', generateRandomRoutine);
+app.use('/routine', routineOperation);
 
 app.listen(port, () => {
     console.log(`Example app listening at http://localhost:${port}`)
