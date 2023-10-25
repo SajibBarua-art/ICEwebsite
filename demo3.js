@@ -209,7 +209,7 @@ function generateRandomRoutine() {
     theoryRoomTimeSlots.push(...computerSingleSlots);
     buildRoutineMatrix(routineMatrix, theoryRoomTimeSlots, theoryDetails, allRoom);
 
-    print(routineMatrix);
+    return routineMatrix;
 }
 
 generateRandomRoutine();

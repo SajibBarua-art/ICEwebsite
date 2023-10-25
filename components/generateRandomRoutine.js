@@ -6,38 +6,123 @@ const CourseDetails = mongoose.model('courseDetails');
 const TimeSlot = mongoose.model('timeSlot');
 const Room = mongoose.model('room');
 
+const routineSchema = new mongoose.Schema({
+    overall: {
+        type: Array,
+        required: true
+    }
+});
+
+const Routine = mongoose.model('routine', routineSchema);
+
+const createRoutineDatabase = async (routineMatrix) => {
+    try {
+        const newRoutine = new Routine({
+            overall: routineMatrix
+        });
+
+        await newRoutine.save();
+        console.log('Routine saved');
+    } catch (err) {
+        console.error('Error saving routine:', err);
+    }
+};
+
+const updateDatabaseRoutine = async (newRoutineMatrix) => {
+    try {
+        const result = await Routine.findOneAndUpdate(
+            {}, // Match all documents
+            { $set: { overall: newRoutineMatrix } }, // Update the "overall" field
+            { new: true } // Return the updated document
+        );
+
+        if (result) {
+            console.log('Routine updated');
+        } else {
+            console.log('No routine document found');
+        }
+    } catch (err) {
+        console.error('Error updating routine:', err);
+    }
+};
+
 // Generate a random routine route
 app.get('/', async (req, res) => {
     try {
         // Retrieve all teachers info from the MongoDB database
-        const teachersInfo = await Teacher.find({});
-        const coursesInfo = await CourseDetails.find({});
-        const timeSlot = await TimeSlot.find({});
-        const room = await Room.find({});
+        const teachersInfo = await Teacher.find({}).lean(); // Use .lean() to get plain JavaScript objects
+        const coursesInfo = await CourseDetails.find({}).lean();
+        const timeSlot = await TimeSlot.find({}).lean();
+        const room = await Room.find({}).lean();
 
         const allTeacherCourse = buildTeacherCourseObjects(teachersInfo, coursesInfo);
 
-        const electricalLab = [], computerLab = [], theory = [];
-        for(const course of allTeacherCourse) {
+        // divide the courses according to the electrical lab, computer lab and theory
+        const electricalLabDetails = [], computerLabDetails = [], theoryDetails = [];
+        for(const teacherCourse of allTeacherCourse) {
+            const course = teacherCourse.course;
             if(course.type === 'theory') {
-                theory.push(course);
+                theoryDetails.push(teacherCourse);
             } else if(course.type === 'computer lab') {
-                computerLab.push(course);
+                computerLabDetails.push(teacherCourse);
             } else if(course.type === 'electrical lab') {
-                electricalLab.push(course);
+                electricalLabDetails.push(teacherCourse);
             } else {
                 console.log("!!! There is an error on: ", course);
             }
         }
 
+        // shuffle to randomize the routine
+        shuffleArray(electricalLabDetails);
+        shuffleArray(computerLabDetails);
+        shuffleArray(theoryDetails);
+
         const electricalRoom = room[0].lab.electrical;
         const computerRoom = room[0].lab.computer;
         const theoryRoom = room[0].theory;
-        const timeslot = timeSlot[0].timeSlot;
+        const timeSlots = timeSlot[0].timeSlot;
+        const allRoom = [...electricalRoom, ...computerRoom, ...theoryRoom];
 
+        // Build routine matrix
+        // routineMatrix[day][year][timeslot]
+        // initializing a 4D array
+        const totalDay = 5, totalYear = 4 + 2, totalTerm = 2 + 2, totalTimeslot = timeSlots.length;
+        const routineMatrix = new Array(totalDay);
+        for(let day = 0; day < totalDay; day++) {
+            routineMatrix[day] = new Array(totalYear);
+            for(let year = 0; year < totalYear; year++) {
+                routineMatrix[day][year] = new Array(totalTerm);
+                for(let term = 0; term < totalTerm; term++) {
+                    routineMatrix[day][year][term] = new Array(totalTimeslot);
+                    for(let timeslot = 0; timeslot < totalTimeslot; timeslot++) {
+                        routineMatrix[day][year][term][timeslot] = {isAllocated: false};
+                    }
+                }
+            }
+        }
+
+        // To handle electrical lab
+        var indexIncrement = 0;
+        const electricalRoomTimeSlots = divideBySlots(electricalRoom, timeSlots, totalDay, true, indexIncrement);
+        buildRoutineMatrix(routineMatrix, electricalRoomTimeSlots, electricalLabDetails, allRoom);
+
+        // To handle computer lab
+        indexIncrement = electricalRoom.length;
+        const computerRoomTimeSlots = divideBySlots(computerRoom, timeSlots, totalDay, true, indexIncrement);
+        buildRoutineMatrix(routineMatrix, computerRoomTimeSlots, computerLabDetails, allRoom);
+        // print(routineMatrix);
+
+        // To handle theory courses
+        indexIncrement = electricalRoom.length + computerRoom.length;
+        const theoryRoomTimeSlots = divideBySlots(theoryRoom, timeSlots, totalDay, false, indexIncrement);
+        // add the extra computer room to the theory room which are not allocated
+        // theoryRoomTimeSlots += computerRoomTimeSlots(1 consecutive slot)
+        const computerSingleSlots = breakIntoSingleSlot(computerRoomTimeSlots);
+        theoryRoomTimeSlots.push(...computerSingleSlots);
+        buildRoutineMatrix(routineMatrix, theoryRoomTimeSlots, theoryDetails, allRoom);
         
-
-        res.json([]);
+        updateDatabaseRoutine(routineMatrix);
+        res.json(routineMatrix);
     } catch (error) {
         console.error("An error occurred into the generate random routine:", error);
         res.status(500).send("Internal Server Error");
@@ -48,27 +133,107 @@ const buildTeacherCourseObjects = (teachersInfo, coursesInfo) => {
     const teacherCourseObjects = [];
   
     for (const teacher of teachersInfo) {
-        const { courses, ...teacherWithoutCourses } = teacher._doc;
+        const { courses, ...teacherWithoutCourses } = teacher;
   
         for (const courseCode of courses) {
             const courseDetails = coursesInfo.find((course) => course.code === courseCode);
 
             if (courseDetails) {
-                const teacherWithCourseDetails = { ...teacherWithoutCourses, ...courseDetails._doc };
+                const teacherWithCourseDetails = { teacher: teacherWithoutCourses, course: courseDetails };
                 teacherCourseObjects.push(teacherWithCourseDetails);
             }
         }
     }
   
     return teacherCourseObjects;
-  };
+};
 
-function generateRandomRoutine() {
-    // Replace this with your own logic to generate a random routine
-    const routine = {
-        // Your routine data
-    };
-    return routine;
+const shuffleArray = (array) => {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+const breakIntoSingleSlot = roomTimeSlots => {
+    const singleSlots = [ ...roomTimeSlots ];
+
+    for(const slot of roomTimeSlots) {
+        const newSlot = { ...slot };
+        newSlot.timeSlotInd++;
+        singleSlots.push(newSlot);
+    }
+    return singleSlots;
+}
+
+const divideBySlots = (rooms, timeslots, totalDay, isLab, indexIncrement) => {
+    const roomTimeSlots = [];
+    var inc = 1; if(isLab) inc = 2;
+
+    for(let roomIndex = 0; roomIndex < rooms.length; roomIndex++) {
+        for(let slotIndex = 0; slotIndex < timeslots.length; slotIndex += inc) {
+            for(let day = 0; day < totalDay; day++) {
+                const obj = {
+                    roomInd: indexIncrement + roomIndex,
+                    timeSlotInd: slotIndex,
+                    dayInd: day
+                }
+                roomTimeSlots.push(obj);
+            }
+        }
+    }
+
+    return roomTimeSlots;
+}
+
+const buildRoutineMatrix = (routineMatrix, roomTimeSlots, coursesDetails, allRoom) => {
+    if(coursesDetails.length > roomTimeSlots.length) {
+        console.log("!!! Error, roomTimeSlots is less than coursesDetails !!!");
+        process.exit();
+    }
+
+    var slotIndex = 0, cnt = 0;
+    for(const courseDetails of coursesDetails) {
+        const year = courseDetails.course.year;
+        const term = courseDetails.course.term;
+        const credit = courseDetails.course.credit;
+
+        for(let j = 0; j < credit; j++) {
+            var curSlotIndex = slotIndex;
+            var day = roomTimeSlots[curSlotIndex].dayInd;
+            var timeSlot = roomTimeSlots[curSlotIndex].timeSlotInd;
+
+            while(routineMatrix[day][year][term][timeSlot].isAllocated) {
+                curSlotIndex++;
+                if(curSlotIndex === roomTimeSlots.length) {
+                    console.log('error', );
+                    process.exit();
+                }
+                day = roomTimeSlots[curSlotIndex].dayInd;
+                timeSlot = roomTimeSlots[curSlotIndex].timeSlotInd;
+            }
+
+            const roomInd = roomTimeSlots[slotIndex].roomInd;
+            routineMatrix[day][year][term][timeSlot] = {
+                isAllocated: true,
+                ...courseDetails,
+                room: allRoom[roomInd]
+            }
+
+            if(credit === 1) {
+                routineMatrix[day][year][term][timeSlot + 1] = {
+                    isAllocated: true,
+                    ...courseDetails,
+                    room: allRoom[roomInd]
+                }
+            }
+
+            // swapping
+            [roomTimeSlots[curSlotIndex], roomTimeSlots[slotIndex]] = [roomTimeSlots[slotIndex], roomTimeSlots[curSlotIndex]];
+        }
+        slotIndex++; cnt++;
+    }
 }
 
 module.exports = app;
