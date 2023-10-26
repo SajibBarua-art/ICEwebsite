@@ -1,5 +1,5 @@
-#3 Databases name and their basic object structure:
-** 1. teachers (teachers information) **
+### Databases name and their basic object structure:
+**1. teachers (teachers information)**
     a. firstName - string
     b. lastName - string
     c. email – string (unique)
@@ -57,6 +57,6 @@ Api’s:
 
 
 
-** Scratch Front End code link: ** https://github.com/SajibBarua-art/ICEwebsiteScratchClient
-** Backend code link: ** https://github.com/SajibBarua-art/ICEwebsite
-** API: ** https://ice-9duauifmg-sajib-baruas-projects.vercel.app/
+**Scratch Front End code link:**https://github.com/SajibBarua-art/ICEwebsiteScratchClient
+**Backend code link:**https://github.com/SajibBarua-art/ICEwebsite
+**API:**https://ice-9duauifmg-sajib-baruas-projects.vercel.app/
