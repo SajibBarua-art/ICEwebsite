@@ -56,6 +56,15 @@ Api’s:
   
 **7. routine**  
 - overall - array (4D) dimensions: [day][year][term][timeSlot]  
+
+*Overview of the overall array:*
+- day: range[0, 4]; 0 means 'Sunday', 1 means 'Monday' and so on.
+- year: range[1, 4]; 
+- term: range[1, 2];
+- timeSlot: range[0, 6];
+
+Example: Suppose, you want to access the Year: 3 and Term: 2 routine. Then dimensions will be [day][3][2][timeSlot].
+
 Api’s:  
 - To only get store routine(it’s not generate the routine): api/routine  
   
