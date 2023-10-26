@@ -50,7 +50,7 @@ Api’s:
 Api’s:  
 - To get all the room details: api/room  
   
-**6. generateRandomRoutine:** To generate and store a new routine. It also gives a response as the generated routine to the client.  
+**6. generateRandomRoutine:** To generate and store a new routine. It also gives the new generated routine as response.  
 Api’s:  
 - To generate, store and get the generated routine: api/generateRandomRoutine  
   
@@ -66,7 +66,7 @@ Api’s:
 Example: Suppose, you want to access the Year: 3 and Term: 2 routine. Then dimensions will be [day][3][2][timeSlot].
 
 Api’s:  
-- To only get store routine(it’s not generate the routine): api/routine  
+- To only get the routine(It will not generate a new routine): api/routine  
   
   
   
