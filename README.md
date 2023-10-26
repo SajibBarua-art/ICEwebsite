@@ -1,4 +1,4 @@
-#3 Databases name and their basic object structure:
+## Databases name and their basic object structure:
 ** 1. teachers (teachers information) **
     a. firstName - string
     b. lastName - string
