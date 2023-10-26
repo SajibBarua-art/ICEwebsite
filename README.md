@@ -8,7 +8,7 @@
 
 Api’s:  
 - To get or post teacher details: api/teachers  
-- To update the courses of a teacher: api/  
+- To update the courses of a teacher: api/teachers/${teacherCode}/courses  
   
 **2. students (students information)**  
 - firstName - string  
@@ -20,7 +20,7 @@ Api’s:
 - ID – String  
 
 Api’s:  
-- To get or post teacher details: api/teachers  
+- To get or post student details: api/students  
 
 **3. courseDetails**  
 - code – string  
@@ -35,8 +35,8 @@ Api’s:
 
 **4. timeSlot**  
 - timeSlot – array  
-- - start - string  
-- - II. end - string  
+&emsp; > start - string  
+&emsp; > end - string  
 
 Api’s:  
 - To get all the timeSlot: api/timeSlot  
@@ -44,13 +44,13 @@ Api’s:
 **5. room**  
 - class – array  
 - lab - object  
-- - computer - array  
-- -  electrical – string  
+&emsp; > computer - array  
+&emsp; > electrical – string  
 
 Api’s:  
 - To get all the room details: api/room  
   
-**6. generateRandomRoutine:** To generate and store routine. It also gives a response as the generated routine to the client.  
+**6. generateRandomRoutine:** To generate and store a new routine. It also gives a response as the generated routine to the client.  
 Api’s:  
 - To generate, store and get the generated routine: api/generateRandomRoutine  
   
