@@ -38,24 +38,34 @@ const studentSchema = new mongoose.Schema({
     },
 });
 const Student = mongoose.model('students', studentSchema);
- 
-app.post("/", async (req, resp) => {
-    try {
-        const student = new Student(req.body);
-        let result = await student.save();
-        result = result.toObject();
-        if (result) {
-            delete result.password;
-            resp.send(req.body);
-            console.log(result);
-        } else {
-            console.log("student already register");
-        }
- 
-    } catch (e) {
-        resp.send("!!! Error in student register panel !!!\n", e);
+
+app.post("/", async (req, res) => {
+  try {
+    // Check if a student with the provided email already exists
+    const existingStudent = await Student.findOne({ email: req.body.email });
+
+    if (existingStudent) {
+      // If a student with the same email already exists, return a conflict response (HTTP 409).
+      return res.status(409).json({ error: "Student already registered with this email" });
     }
+
+    // Create a new student using the data from the request body
+    const newStudent = new Student(req.body);
+
+    // Save the new student to the database
+    await newStudent.save();
+
+    // Respond with a success message and the saved student data
+    const savedStudent = newStudent.toObject();
+    delete savedStudent.password; // Remove sensitive data from the response
+
+    res.status(201).json(savedStudent);
+  } catch (error) {
+    console.error("Error in student registration:", error);
+    res.status(500).json({ error: "An error occurred while registering the student" });
+  }
 });
+
 
 app.get("/", async (req, resp) => {
     try {

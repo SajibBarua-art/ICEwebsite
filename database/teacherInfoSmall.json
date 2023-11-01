@@ -1,0 +1,31 @@
+[
+    {
+      "_id": "6534bb2412c60d7fcc464d33",
+      "firstName": "Mohammad Amzad",
+      "lastName": "Hossain",
+      "email": "amzad@nstu.edu.bd",
+      "teacherCode": "MAH",
+      "courses": [
+        "ICE-1201",
+        "ICE-3201",
+        "ICE-1202"
+      ],
+      "date": "2023-10-22T06:03:16.573Z",
+      "__v": 2
+    },
+    {
+      "_id": "6534bbab12c60d7fcc464d35",
+      "firstName": "K. M. Aslam",
+      "lastName": "Uddin",
+      "email": "aslam@nstu.edu.bd",
+      "teacherCode": "KMAU",
+      "courses": [
+        "ICE-1203",
+        "ICE-2203",
+        "ICE-2204",
+        "ICE-1201"
+      ],
+      "date": "2023-10-22T06:05:31.008Z",
+      "__v": 2
+    }
+  ]

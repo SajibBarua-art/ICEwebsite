@@ -4,7 +4,8 @@ const fs = require('fs');
 
 const buildTeacherCourseObjects = (teachersInfo, coursesInfo) => {
     const teacherCourseObjects = [];
-  
+    
+    const map1 = new Map();
     for (const teacher of teachersInfo) {
         const { courses, ...teacherWithoutCourses } = teacher;
   
@@ -13,6 +14,16 @@ const buildTeacherCourseObjects = (teachersInfo, coursesInfo) => {
 
             if (courseDetails) {
                 const teacherWithCourseDetails = { teacher: teacherWithoutCourses, course: courseDetails };
+                const teacher = teacherWithCourseDetails.teacher.teacherCode;
+                const courseCode = teacherWithCourseDetails.course.code;
+                const ind = teacherCourseObjects.length;
+                if(map1.has(courseCode)) {
+                    const prev_ind = map1.get(courseCode);
+                    teacherCourseObjects[prev_ind].teacher.teacherCode += ('/' + teacher);
+                    continue;
+                }
+
+                map1.set(courseCode, ind);
                 teacherCourseObjects.push(teacherWithCourseDetails);
             }
         }
@@ -38,8 +49,6 @@ const print = (routineMatrix) => {
             }
         }
     }
-
-    console.log(e, c, t)
 }
 
 const shuffleArray = (array) => {
@@ -88,17 +97,33 @@ const buildRoutineMatrix = (routineMatrix, roomTimeSlots, coursesDetails, allRoo
     }
 
     var slotIndex = 0, cnt = 0;
+    var isRoomTaken = new Array(10), isTeacherAllocated = new Array(10);
+    for(let day = 0; day < 10; day++) {
+        isRoomTaken[day] = new Array(10);
+        isTeacherAllocated[day] = new Array(10);
+        for(let timeSlot = 0; timeSlot < 10; timeSlot++) {
+            isRoomTaken[day][timeSlot] = new Array(10);
+            isTeacherAllocated[day][timeSlot] = new Set();
+            for(let room = 0; room < 10; room++) {
+                isRoomTaken[day][timeSlot][room] = false;
+            }
+        }
+    }
+
+    var slotIndex = 0, cnt = 0;
     for(const courseDetails of coursesDetails) {
         const year = courseDetails.course.year;
         const term = courseDetails.course.term;
         const credit = courseDetails.course.credit;
-
+        const teacherCode = courseDetails.teacher.teacherCode;
+        
         for(let j = 0; j < credit; j++) {
             var curSlotIndex = slotIndex;
             var day = roomTimeSlots[curSlotIndex].dayInd;
             var timeSlot = roomTimeSlots[curSlotIndex].timeSlotInd;
+            var roomInd = roomTimeSlots[slotIndex].roomInd;
 
-            while(routineMatrix[day][year][term][timeSlot].isAllocated) {
+            while(routineMatrix[day][year][term][timeSlot].isAllocated || isRoomTaken[day][timeSlot][roomInd] || isTeacherAllocated[day][timeSlot].has(teacherCode)) {
                 curSlotIndex++;
                 if(curSlotIndex === roomTimeSlots.length) {
                     console.log('error', );
@@ -106,9 +131,11 @@ const buildRoutineMatrix = (routineMatrix, roomTimeSlots, coursesDetails, allRoo
                 }
                 day = roomTimeSlots[curSlotIndex].dayInd;
                 timeSlot = roomTimeSlots[curSlotIndex].timeSlotInd;
+                roomInd = roomTimeSlots[curSlotIndex].roomInd;
             }
 
-            const roomInd = roomTimeSlots[slotIndex].roomInd;
+            isRoomTaken[day][timeSlot][roomInd] = true;
+            isTeacherAllocated[day][timeSlot].add(teacherCode);
             routineMatrix[day][year][term][timeSlot] = {
                 isAllocated: true,
                 ...courseDetails,
@@ -132,7 +159,7 @@ const buildRoutineMatrix = (routineMatrix, roomTimeSlots, coursesDetails, allRoo
 
 function generateRandomRoutine() {
     // Retrieve all teachers info from the MongoDB database
-    const teachersInfoString = fs.readFileSync('./database/teachersInfoString.json', 'utf-8');
+    const teachersInfoString = fs.readFileSync('./database/teacherInfoSmall.json', 'utf-8');
     const coursesInfoString = fs.readFileSync('./database/courseInfoString.json', 'utf-8');
     const timeSlotString = fs.readFileSync('./database/timeSlotString.json', 'utf-8');
     const roomString = fs.readFileSync('./database/roomString.json', 'utf-8');
