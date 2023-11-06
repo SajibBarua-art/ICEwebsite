@@ -13,22 +13,11 @@
 // MRH: MATH-1211
 // BMS: BLWS
 
-for(let day = 0; day < routineMatrix.length; day++) {
-    for(let year = 0; year < routineMatrix[day].length; year++) {
-        for(let term = 0; term < routineMatrix[day][year].length; term++) {
-            for(let timeSlot = 0; timeSlot < routineMatrix[day][year][term].length; timeSlot++) {
-                if(routineMatrix[day][year][term][timeSlot].isAllocated) {
-                    
-                }
-            }
-        }
-    }
-}
+const fs = require('fs');
+const teachersInfoString = fs.readFileSync('./database/teachersInfoString.json', 'utf-8');
 
-{
-    if(l4.isAllocated) {
-        l4.course.code <br />
-        l4.teacher.teacherCode <br />
-        l4.room
-    }
+let newTeachers = [];
+for(const teacher of teachersInfoString) {
+    const name = teacher.firstName + teacher.lastName;
+    
 }

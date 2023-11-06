@@ -1,13 +1,10 @@
 const express = require('express');
 const app = express.Router();
 const mongoose = require('mongoose');
+const fs = require('fs');
 
 const teacherSchema = new mongoose.Schema({
-    firstName: {
-        type: String,
-        required: true,
-    },
-    lastName: {
+    name: {
         type: String,
         required: true,
     },
@@ -15,6 +12,9 @@ const teacherSchema = new mongoose.Schema({
         type: String,
         required: true,
         unique: true,
+    },
+    mobile: {
+        type: String
     },
     teacherCode: {
         type: String,
@@ -26,7 +26,19 @@ const teacherSchema = new mongoose.Schema({
         required: false,
         default: []
     },
-    date: {
+    designation: {
+        type: String,
+        required: true
+    },
+    department: {
+        type: String,
+        default: "ICE, NSTU"
+    },
+    password: {
+        type: String,
+        required: true
+    },
+    joiningDate: {
         type: Date,
         default: Date.now,
     },
@@ -87,5 +99,6 @@ app.put("/:teacherCode/courses", async (req, resp) => {
         resp.status(500).send("Internal Server Error");
     }
 });
+
 
 module.exports = app;

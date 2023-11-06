@@ -1,3 +1,30 @@
+// For backend and express
+const express = require('express');
+const app = express();
+const cors = require("cors");
+const port = process.env.PORT || 5000;
+
+require('dotenv').config();
+app.use(express.json());
+app.use(cors());
+app.get("/", (req, resp) => {
+    resp.send("App is Working");
+});
+
+// Connect to the database
+const mongoose = require('mongoose');
+mongoose.connect(`mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.smd1bmx.mongodb.net/?retryWrites=true&w=majority`, {
+    dbName: 'routine',
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+})
+.then(() => {
+    console.log('Connected to routine database');
+})
+.catch(err => {
+    console.error('Error connecting to the database:', err);
+});
+
 const teacherSchema = new mongoose.Schema({
     name: {
         type: String,
@@ -38,8 +65,8 @@ const teacherSchema = new mongoose.Schema({
         default: Date.now,
     }
 });
-const Teacher = mongoose.model('teachers', teacherSchema);
 
+const Teacher = mongoose.model('teachers', teacherSchema);
 const fs = require('fs');
 const teachersInfoString = fs.readFileSync('./database/teachersInfoString.json', 'utf-8');
 const teachersInfo = JSON.parse(teachersInfoString); 
@@ -52,8 +79,8 @@ const createRoom = async () => {
             delete teacher.lastName;
             teacher["name"] = name;
             teacher["mobile"] = "";
-            teacher["designation"] = "NSTU";
-            teacher["departement"] = "ICE";
+            teacher["designation"] = "Designation";
+            teacher["departement"] = "ICE, NSTU";
             teacher["password"] = "j";
             teacher["joiningDate"] = teacher.date;
             delete teacher.date;
@@ -66,3 +93,8 @@ const createRoom = async () => {
 };
 
 createRoom();
+
+
+app.listen(port, () => {
+    console.log(`Example app listening at http://localhost:${port}`)
+})
