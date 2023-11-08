@@ -13,11 +13,15 @@
 // MRH: MATH-1211
 // BMS: BLWS
 
-const fs = require('fs');
-const teachersInfoString = fs.readFileSync('./database/teachersInfoString.json', 'utf-8');
-
-let newTeachers = [];
-for(const teacher of teachersInfoString) {
-    const name = teacher.firstName + teacher.lastName;
-    
-}
+let teacherInd = 0;
+        teacher = teachersInfoSortedByJoiningDate[teacherInd];
+        while(takenTeachers[i].has(teacher.teacherCode)) {
+            teacherInd++;
+            if(teacherInd === teachersInfoSortedByJoiningDate.length) {
+                teacherInd = 0;
+            }
+            teacher = teachersInfoSortedByJoiningDate[teacherInd];
+        }
+        teachersInfoSortedByJoiningDate.push(teachersInfoSortedByJoiningDate[teacherInd]);
+        teachersInfoSortedByJoiningDate.splice(teacherInd, 1);
+        takenTeachers[i].add(teacher.teacherCode);

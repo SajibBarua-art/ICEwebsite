@@ -1,12 +1,15 @@
 const express = require('express');
 const app = express.Router();
 const mongoose = require('mongoose');
-const fs = require('fs');
 
 const teacherSchema = new mongoose.Schema({
-    name: {
+    firstName: {
         type: String,
         required: true,
+    },
+    lastName: {
+        type: String,
+        default: ""
     },
     email: {
         type: String,

@@ -26,9 +26,13 @@ mongoose.connect(`mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cl
 });
 
 const teacherSchema = new mongoose.Schema({
-    name: {
+    firstName: {
         type: String,
         required: true,
+    },
+    lastName: {
+        type: String,
+        default: ""
     },
     email: {
         type: String,
@@ -74,10 +78,6 @@ const teachersInfo = JSON.parse(teachersInfoString);
 const createRoom = async () => {
     try {
         for(let teacher of teachersInfo) {
-            const name = teacher.firstName + ' ' + teacher.lastName;
-            delete teacher.firstName;
-            delete teacher.lastName;
-            teacher["name"] = name;
             teacher["mobile"] = "";
             teacher["designation"] = "Designation";
             teacher["departement"] = "ICE, NSTU";

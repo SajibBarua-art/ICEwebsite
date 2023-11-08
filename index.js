@@ -2,7 +2,7 @@
 const express = require('express');
 const app = express();
 const cors = require("cors");
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 5055;
 
 require('dotenv').config();
 app.use(express.json());
@@ -33,6 +33,7 @@ const timeSlotRoutes = require('./components/timeSlot');
 const roomRoutes = require('./components/room');
 const generateRandomRoutine = require('./components/generateRandomRoutine');
 const routineOperation = require('./components/routineOperation');
+const generateExamCommittee = require('./components/generateExamCommittee');
 
 // Use the routes for data management
 app.use('/teachers', teacherRoutes);
@@ -42,6 +43,7 @@ app.use('/timeSlot', timeSlotRoutes);
 app.use('/room', roomRoutes);
 app.use('/generateRandomRoutine', generateRandomRoutine);
 app.use('/routine', routineOperation);
+app.use('/generateExamCommittee', generateExamCommittee);
 
 app.listen(port, () => {
     console.log(`Example app listening at http://localhost:${port}`)

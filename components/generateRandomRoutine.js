@@ -143,12 +143,12 @@ const buildTeacherCourseObjects = (teachersInfo, coursesInfo) => {
 
             if (courseDetails) {
                 const teacherWithCourseDetails = { teacher: teacherWithoutCourses, course: courseDetails };
-                const teacher = teacherWithCourseDetails.teacher.teacherCode;
+                const teacher2 = teacherWithCourseDetails.teacher;
                 const courseCode = teacherWithCourseDetails.course.code;
                 const ind = teacherCourseObjects.length;
                 if(map1.has(courseCode)) {
                     const prev_ind = map1.get(courseCode);
-                    teacherCourseObjects[prev_ind].teacher.teacherCode += ('/' + teacher);
+                    teacherCourseObjects[prev_ind]['teacher2'] = teacher2;
                     continue;
                 }
 
@@ -157,7 +157,7 @@ const buildTeacherCourseObjects = (teachersInfo, coursesInfo) => {
             }
         }
     }
-  
+    
     return teacherCourseObjects;
 };
 
