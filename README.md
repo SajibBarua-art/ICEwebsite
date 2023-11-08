@@ -72,7 +72,7 @@ Example: Suppose, you want to access the Year: 3 and Term: 2 routine. Then dimen
 Api’s:  
 - To only get the routine(It will not generate a new routine): api/routine  
 
-**8. generateExamCommittee** To generate and store a new exam committee. It also gives the new generated exam committee as response.
+**8. generateExamCommittee:** To generate and store a new exam committee. It also gives the new generated exam committee as response.
 Api's:
 - To generate, store and get the generated exam committee: api/generateExamCommittee
 
@@ -86,4 +86,4 @@ Api's:
   
 **Scratch Front End code link:** https://github.com/SajibBarua-art/ICEwebsiteScratchClient  
 **Backend code link:** https://github.com/SajibBarua-art/ICEwebsite  
-**API:**  
+**API:**  https://ice-lpycr33m4-sajib-baruas-projects.vercel.app/
