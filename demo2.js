@@ -113,7 +113,9 @@ const buildExamCommittee = (teacherCourseDetails, teachersInfoSortedByCourses, t
         examCommittee[i][0] = {
             course: {
                 name: course.name,
-                code: course.code
+                code: course.code,
+                year: course.year,
+                term: course.term
             },
             teacher: {
                 name: name,
@@ -199,9 +201,6 @@ const generateExamCommittee = () => {
     teachersInfoSortedByCourses.sort((a, b) => b.courses.length - a.courses.length);
     teachersInfoSortedByJoiningDate.sort((a, b) => new Date(a.joiningDate) - new Date(b.joiningDate));
 
-
-    console.log(teachersInfoSortedByJoiningDate);
-
     const sortedCourses = [];
     for(let i = 4; i > 0; i--) {
         sortedCourses.push(...yearTermWiseCourse[i][1]);
@@ -209,6 +208,18 @@ const generateExamCommittee = () => {
     }
     
     const examCommittee = buildExamCommittee(sortedCourses, teachersInfoSortedByCourses, teachersInfoSortedByJoiningDate);
+    let yearTermWiseExamCommittee = new Array(7);
+    for(let i = 0; i < 7; i++) {
+        yearTermWiseExamCommittee[i] = new Array(4);
+        for(let j = 0; j < 4; j++) {
+            yearTermWiseExamCommittee[i][j] = [];
+        }
+    }
+
+    for(let i = 0; i < examCommittee.length; i++) {
+        const year = examCommittee[i][0].course.year, term = examCommittee[i][0].course.term;
+        yearTermWiseExamCommittee[year][term].push(examCommittee[i]);
+    }
 };
 
 generateExamCommittee();

@@ -3,8 +3,12 @@
 - firstName - string  
 - lastName - string  
 - email – string (unique)  
+- mobile - string
 - teacherCode – string (unique)  
 - courses – Array (only course code)  
+- designation - string
+- department - string
+- joiningDate - Date
 
 Api’s:  
 - To get or post teacher details: api/teachers  
@@ -55,7 +59,7 @@ Api’s:
 - To generate, store and get the generated routine: api/generateRandomRoutine  
   
 **7. routine**  
-- overall - array (4D) dimensions: [day][year][term][timeSlot]  
+- overall: array (4D), dimensions: [day][year][term][timeSlot]  
 
 *Overview of the overall array:*
 - day: range[0, 4]; 0 means 'Sunday', 1 means 'Monday' and so on.
@@ -67,9 +71,19 @@ Example: Suppose, you want to access the Year: 3 and Term: 2 routine. Then dimen
 
 Api’s:  
 - To only get the routine(It will not generate a new routine): api/routine  
+
+**8. generateExamCommittee** To generate and store a new exam committee. It also gives the new generated exam committee as response.
+Api's:
+- To generate, store and get the generated exam committee: api/generateExamCommittee
+
+**9. examCommittee**
+- theory: array (2D), dimensions: [year][term]
+
+Api's: 
+- To only get the exam committee(It will not generate a new exam committee): api/examCommittee
   
   
   
 **Scratch Front End code link:** https://github.com/SajibBarua-art/ICEwebsiteScratchClient  
 **Backend code link:** https://github.com/SajibBarua-art/ICEwebsite  
-**API:** https://ice-9duauifmg-sajib-baruas-projects.vercel.app/  
+**API:**  

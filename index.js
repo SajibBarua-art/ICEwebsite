@@ -34,6 +34,7 @@ const roomRoutes = require('./components/room');
 const generateRandomRoutine = require('./components/generateRandomRoutine');
 const routineOperation = require('./components/routineOperation');
 const generateExamCommittee = require('./components/generateExamCommittee');
+const examComitteeOperation = require('./components/examCommitteeOperation');
 
 // Use the routes for data management
 app.use('/teachers', teacherRoutes);
@@ -44,6 +45,7 @@ app.use('/room', roomRoutes);
 app.use('/generateRandomRoutine', generateRandomRoutine);
 app.use('/routine', routineOperation);
 app.use('/generateExamCommittee', generateExamCommittee);
+app.use('/examCommittee', examComitteeOperation);
 
 app.listen(port, () => {
     console.log(`Example app listening at http://localhost:${port}`)

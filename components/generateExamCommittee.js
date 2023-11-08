@@ -128,7 +128,9 @@ const buildExamCommittee = (teacherCourseDetails, teachersInfoSortedByCourses, t
         examCommittee[i][0] = {
             course: {
                 name: course.name,
-                code: course.code
+                code: course.code,
+                year: course.year,
+                term: course.term
             },
             teacher: {
                 name: name,
@@ -219,10 +221,22 @@ app.get('/', async (req, res) => {
         }
         
         const examCommittee = buildExamCommittee(sortedCourses, teachersInfoSortedByCourses, teachersInfoSortedByJoiningDate);
+        let yearTermWiseExamCommittee = new Array(7);
+        for(let i = 0; i < 7; i++) {
+            yearTermWiseExamCommittee[i] = new Array(4);
+            for(let j = 0; j < 4; j++) {
+                yearTermWiseExamCommittee[i][j] = [];
+            }
+        }
 
-        // createRoutineDatabase(examCommittee);
-        updateDatabaseExamCommittee(examCommittee);
-        res.json(examCommittee);
+        for(let i = 0; i < examCommittee.length; i++) {
+            const year = examCommittee[i][0].course.year, term = examCommittee[i][0].course.term;
+            yearTermWiseExamCommittee[year][term].push(examCommittee[i]);
+        }
+
+        // createRoutineDatabase(yearTermWiseExamCommittee);
+        updateDatabaseExamCommittee(yearTermWiseExamCommittee);
+        res.json(yearTermWiseExamCommittee);
     } catch (error) {
         console.error("An error occurred into the generate random examComittee:", error);
         res.status(500).send("Internal Server Error");
