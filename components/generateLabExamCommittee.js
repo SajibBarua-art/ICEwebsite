@@ -14,7 +14,7 @@ const labExamCommitteeSchema = new mongoose.Schema({
     }
 });
 
-const ExamComittee = mongoose.model('labExamcommittees', labExamCommitteeSchema);
+const ExamComittee = mongoose.model('labexamcommittees', labExamCommitteeSchema);
 
 const createLabExamCommitteeDatabase = async (examCommittee) => {
     try {
