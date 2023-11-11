@@ -284,4 +284,7 @@ const buildRoutineMatrix = (routineMatrix, roomTimeSlots, coursesDetails, allRoo
     }
 }
 
-module.exports = app;
+module.exports = {
+    app,
+    shuffleArray
+};

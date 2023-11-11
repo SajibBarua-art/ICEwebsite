@@ -2,7 +2,7 @@
 const express = require('express');
 const app = express();
 const cors = require("cors");
-const port = process.env.PORT || 5055;
+const port = process.env.PORT || 5000;
 
 require('dotenv').config();
 app.use(express.json());
@@ -35,6 +35,7 @@ const generateRandomRoutine = require('./components/generateRandomRoutine');
 const routineOperation = require('./components/routineOperation');
 const generateExamCommittee = require('./components/generateExamCommittee');
 const examComitteeOperation = require('./components/examCommitteeOperation');
+const generateLabExamCommittee = require('./components/generateLabExamCommittee');
 
 // Use the routes for data management
 app.use('/teachers', teacherRoutes);
@@ -42,10 +43,11 @@ app.use('/courseDetails', courseDetailsRoutes);
 app.use('/students', studentRoutes);
 app.use('/timeSlot', timeSlotRoutes);
 app.use('/room', roomRoutes);
-app.use('/generateRandomRoutine', generateRandomRoutine);
+app.use('/generateRandomRoutine', generateRandomRoutine.app);
 app.use('/routine', routineOperation);
-app.use('/generateExamCommittee', generateExamCommittee);
+app.use('/generateExamCommittee', generateExamCommittee.app);
 app.use('/examCommittee', examComitteeOperation);
+app.use('/generateLabExamCommittee', generateLabExamCommittee);
 
 app.listen(port, () => {
     console.log(`Example app listening at http://localhost:${port}`)

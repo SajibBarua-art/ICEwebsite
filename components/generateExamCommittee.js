@@ -20,7 +20,7 @@ const createRoutineDatabase = async (examCommittee) => {
         });
 
         await newExamComittee.save();
-        console.log('ExamComittee saved');
+        console.log('Exam Committee saved');
     } catch (err) {
         console.error('Error saving examComittee:', err);
     }
@@ -35,9 +35,9 @@ const updateDatabaseExamCommittee = async (newExamComitteeMatrix) => {
         );
 
         if (result) {
-            console.log('ExamComittee updated');
+            console.log('Exam Committee updated');
         } else {
-            console.log('No examComittee document found');
+            console.log('No exam Committee document found');
         }
     } catch (err) {
         console.error('Error updating examComittee:', err);
@@ -243,4 +243,7 @@ app.get('/', async (req, res) => {
     }
 });
 
-module.exports = app;
+module.exports = {
+    app,
+    rearrangeCourses
+};

@@ -1,1 +1,3 @@
-le.log(teac
+forEach((value, key) => {
+        console.log(key, value);
+    });
