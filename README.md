@@ -72,18 +72,27 @@ Example: Suppose, you want to access the Year: 3 and Term: 2 routine. Then dimen
 Api’s:  
 - To only get the routine(It will not generate a new routine): api/routine  
 
-**8. generateExamCommittee:** To generate and store a new exam committee. It also gives the new generated exam committee as response.
+**8. generateExamCommittee:** To generate and store a new theory exam committee. It also gives the new generated theory exam committee as response.
 Api's:
-- To generate, store and get the generated exam committee: api/generateExamCommittee
+- To generate, store and get the generated theory exam committee: api/generateExamCommittee
 
 **9. examCommittee**
 - theory: array (2D), dimensions: [year][term]
 
 Api's: 
-- To only get the exam committee(It will not generate a new exam committee): api/examCommittee
+- To only get the theory exam committee(It will not generate a new exam committee): api/examCommittee
   
-  
+**10. generateLabExamCommittee:** To generate and store a new lab exam committee. It also gives the new generated lab exam committee as response.
+Api's:
+- To generate, store and get the generated lab exam committee: api/generateLabExamCommittee
+
+**11. labExamCommittee**
+- lab: array(2D), dimensions: [year][term]
+
+Api's: 
+- To only get the lab exam committee(It will not generate a new lab exam committee): api/labExamCommittee
+
   
 **Scratch Front End code link:** https://github.com/SajibBarua-art/ICEwebsiteScratchClient  
 **Backend code link:** https://github.com/SajibBarua-art/ICEwebsite  
-**API:**  https://ice-lpycr33m4-sajib-baruas-projects.vercel.app/
+**API:**  https://ice-6o33ig0ew-sajib-baruas-projects.vercel.app/
