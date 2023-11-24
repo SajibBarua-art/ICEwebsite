@@ -67,6 +67,18 @@ const teacherSchema = new mongoose.Schema({
     joiningDate: {
         type: Date,
         default: Date.now,
+    },
+    isAdmin: {
+        type: Boolean,
+        default: false
+    },
+    isInExamCommittee: {
+        type: Boolean,
+        default: false
+    },
+    isInRoutineCommittee: {
+        type: Boolean,
+        default: false
     }
 });
 

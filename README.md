@@ -92,6 +92,12 @@ Api's:
 Api's: 
 - To only get the lab exam committee(It will not generate a new lab exam committee): api/labExamCommittee
 
+**12. admin panel**
+
+**13. exam committee panel**
+
+**14. routine committee panel**
+
   
 **Scratch Front End code link:** https://github.com/SajibBarua-art/ICEwebsiteScratchClient  
 **Backend code link:** https://github.com/SajibBarua-art/ICEwebsite  
