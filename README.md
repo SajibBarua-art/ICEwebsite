@@ -96,7 +96,7 @@ Api's:
 - To only get the lab exam committee(It will not generate a new lab exam committee): api/labExamCommittee
 
 **12. admin panel**
-api to update status: api/teacher/updateAdminStatus'
+api to update status: api/teacher/updateAdminStatus
 **13. exam committee panel**
 api to update status: api/teacher/updateExamCommitteeStatus
 **14. routine committee panel**
@@ -105,4 +105,4 @@ api to update status: api/teacher/updateRoutineCommitteeStatus
   
 **Scratch Front End code link:** https://github.com/SajibBarua-art/ICEwebsiteScratchClient  
 **Backend code link:** https://github.com/SajibBarua-art/ICEwebsite  
-**API:**  https://ice-6o33ig0ew-sajib-baruas-projects.vercel.app/
+**API:**  https://ice-mrgu5zlmj-sajib-baruas-projects.vercel.app/
