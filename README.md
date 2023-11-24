@@ -97,8 +97,10 @@ Api's:
 
 **12. admin panel**
 - api to update status: api/teacher/updateAdminStatus
+
 **13. exam committee panel**
 - api to update status: api/teacher/updateExamCommitteeStatus
+
 **14. routine committee panel**
 - api to update status: api/teacher/updateRoutineCommitteeStatus
 
