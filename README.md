@@ -96,11 +96,11 @@ Api's:
 - To only get the lab exam committee(It will not generate a new lab exam committee): api/labExamCommittee
 
 **12. admin panel**
-api to update status: api/teacher/updateAdminStatus
+- api to update status: api/teacher/updateAdminStatus
 **13. exam committee panel**
-api to update status: api/teacher/updateExamCommitteeStatus
+- api to update status: api/teacher/updateExamCommitteeStatus
 **14. routine committee panel**
-api to update status: api/teacher/updateRoutineCommitteeStatus
+- api to update status: api/teacher/updateRoutineCommitteeStatus
 
   
 **Scratch Front End code link:** https://github.com/SajibBarua-art/ICEwebsiteScratchClient  
