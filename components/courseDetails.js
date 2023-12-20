@@ -44,7 +44,7 @@ app.post("/", async (req, resp) => {
             resp.send(req.body);
             console.log(result);
         } else {
-            console.log("courseDetails already registered");
+            console.log("Course Details already registered");
         }
  
     } catch (e) {

@@ -89,6 +89,46 @@ app.get("/", async (req, resp) => {
     }
 });
 
+app.get('/by-email/:email', async (req, res) => {
+    const email = req.params.email;
+  
+    try {
+      const teacher = await Teacher.findOne({ email });
+  
+      if (!teacher) {
+        return res.status(404).json({ error: 'Teacher not found' });
+      }
+  
+      res.json(teacher);
+    } catch (error) {
+      console.error('Error fetching teacher details:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+// Update a teacher by email
+app.put('/updateTeacher', async (req, res) => {
+    const { email, newData } = req.body;
+  
+    try {
+      // Find the teacher by email and update
+      const updatedTeacher = await Teacher.findOneAndUpdate(
+        { email },
+        newData,
+        { new: true } // Return the updated document
+      );
+  
+      if (!updatedTeacher) {
+        return res.status(404).json({ message: 'Teacher not found' });
+      }
+  
+      res.json(updatedTeacher);
+    } catch (error) {
+      console.error('Error updating teacher:', error);
+      res.status(500).json({ message: 'Internal Server Error' });
+    }
+});
+
 // to update courses of a teacher
 app.put("/:teacherCode/courses", async (req, resp) => {
     try {
