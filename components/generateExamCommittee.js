@@ -8,6 +8,16 @@ const examCommitteeSchema = new mongoose.Schema({
     theory: {
         type: Array,
         required: true
+    },
+    teachers: {
+        type: Map,
+        of: [
+            {
+                courseCode: { type: String },
+                courseName: { type: String },
+                remark: { type: String }
+            }
+        ]
     }
 });
 
@@ -26,11 +36,16 @@ const createRoutineDatabase = async (examCommittee) => {
     }
 };
 
-const updateDatabaseExamCommittee = async (newExamComitteeMatrix) => {
+const updateDatabaseExamCommittee = async (newExamComitteeMatrix, teacherWithCourses) => {
     try {
         const result = await ExamComittee.findOneAndUpdate(
             {}, // Match all documents
-            { $set: { theory: newExamComitteeMatrix } },
+            {
+                $set: {
+                    theory: newExamComitteeMatrix,
+                    teachers: teacherWithCourses
+                }
+            },
             { new: true } // Return the updated document
         );
 
@@ -46,27 +61,27 @@ const updateDatabaseExamCommittee = async (newExamComitteeMatrix) => {
 
 const buildTeacherCourseObjects = (teachersInfo, coursesInfo) => {
     const teacherCourseObjects = [];
-    
+
     const map1 = new Map();
     for (const teacher of teachersInfo) {
         const { courses, ...teacherWithoutCourses } = teacher;
 
-        if(teacher.department !== 'ICE, NSTU') {
+        if (teacher.department !== 'ICE, NSTU') {
             continue;
         }
-  
+
         for (const courseCode of courses) {
             const courseDetails = coursesInfo.find((course) => course.code === courseCode);
 
             if (courseDetails) {
-                if(courseDetails.type !== 'theory') {
+                if (courseDetails.type !== 'theory') {
                     continue;
                 }
                 const teacherWithCourseDetails = { teacher: teacherWithoutCourses, course: courseDetails };
                 const teacher2 = teacherWithCourseDetails.teacher;
                 const courseCode = teacherWithCourseDetails.course.code;
                 const ind = teacherCourseObjects.length;
-                if(map1.has(courseCode)) {
+                if (map1.has(courseCode)) {
                     const prev_ind = map1.get(courseCode);
                     teacherCourseObjects[prev_ind]['teacher2'] = teacher2;
                     continue;
@@ -77,7 +92,7 @@ const buildTeacherCourseObjects = (teachersInfo, coursesInfo) => {
             }
         }
     }
-    
+
     return teacherCourseObjects;
 }
 
@@ -90,13 +105,13 @@ const rearrangeCourses = (allTeacherCourse) => {
         }
     }
 
-    for(const teacherCourse of allTeacherCourse) {
+    for (const teacherCourse of allTeacherCourse) {
         const course = teacherCourse.course;
         const year = course.year, term = course.term;
         yearTermWiseCourse[year][term].push(teacherCourse);
     }
 
-    for(let i = 1; i <= 4; i++) {
+    for (let i = 1; i <= 4; i++) {
         yearTermWiseCourse[i][1].sort((a, b) => a.course.code.localeCompare(b.course.code));
         yearTermWiseCourse[i][2].sort((a, b) => a.course.code.localeCompare(b.course.code));
     }
@@ -104,21 +119,25 @@ const rearrangeCourses = (allTeacherCourse) => {
     return yearTermWiseCourse;
 }
 
+const removePunctuation = (inputString) => {
+    // Use a regular expression to remove all punctuation marks
+    return inputString.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "");
+}
 
-const buildExamCommittee = (teacherCourseDetails, teachersInfoSortedByCourses, teachersInfoSortedByJoiningDate) => {
+const buildExamCommittee = (teacherCourseDetails, teachersInfoSortedByCourses, teachersInfoSortedByJoiningDate, teacherWithCourses) => {
     const len = teacherCourseDetails.length;
     const examCommittee = new Array(len);
-    for(let i = 0; i < len; i++) {
+    for (let i = 0; i < len; i++) {
         examCommittee[i] = new Array(4);
     }
 
     let takenTeachers = new Array(len);
-    for(let i = 0; i < len; i++) {
+    for (let i = 0; i < len; i++) {
         takenTeachers[i] = new Set();
     }
 
     // to 1st examiner
-    for(let i = 0; i < len; i++) {
+    for (let i = 0; i < len; i++) {
         const teacher = teacherCourseDetails[i].teacher;
         const course = teacherCourseDetails[i].course;
         const name = teacher.firstName + ' ' + teacher.lastName;
@@ -139,20 +158,35 @@ const buildExamCommittee = (teacherCourseDetails, teachersInfoSortedByCourses, t
                 remark: '1st Examiner'
             }
         }
+
+        // to handle teacher with courses database
+        const teacherName = removePunctuation(name);
+        const courseDetails = {
+            courseCode: examCommittee[i][0].course.code,
+            courseName: examCommittee[i][0].course.name,
+            remark: '1st Examiner'
+        }
+        if (teacherWithCourses[teacherName]) {
+            // If the array already exists, push the new object
+            teacherWithCourses[teacherName].push(courseDetails);
+        } else {
+            // If the array doesn't exist, create it with the new object as the first element
+            teacherWithCourses[teacherName] = [courseDetails];
+        }
     }
 
     // to 2nd examiner
-    for(let i = 0; i < len; i++) {
+    for (let i = 0; i < len; i++) {
         let teacher;
-        if(teacherCourseDetails[i].hasOwnProperty('teacher2')) {
+        if (teacherCourseDetails[i].hasOwnProperty('teacher2')) {
             teacher = teacherCourseDetails[i].teacher2;
         }
         else {
             let teacherInd = 0;
             teacher = teachersInfoSortedByCourses[teacherInd];
-            while(takenTeachers[i].has(teacher.teacherCode)) {
+            while (takenTeachers[i].has(teacher.teacherCode)) {
                 teacherInd++;
-                if(teacherInd === teachersInfoSortedByCourses.length) {
+                if (teacherInd === teachersInfoSortedByCourses.length) {
                     teacherInd = 0;
                 }
                 teacher = teachersInfoSortedByCourses[teacherInd];
@@ -171,31 +205,61 @@ const buildExamCommittee = (teacherCourseDetails, teachersInfoSortedByCourses, t
                 remark: '2nd Examiner'
             }
         }
+
+        // to handle teacher with courses database
+        const teacherName = removePunctuation(name);
+        const courseDetails = {
+            courseCode: examCommittee[i][0].course.code,
+            courseName: examCommittee[i][0].course.name,
+            remark: '2nd Examiner'
+        }
+        if (teacherWithCourses[teacherName]) {
+            // If the array already exists, push the new object
+            teacherWithCourses[teacherName].push(courseDetails);
+        } else {
+            // If the array doesn't exist, create it with the new object as the first element
+            teacherWithCourses[teacherName] = [courseDetails];
+        }
     }
 
     // to 3rd and 4th examiner
-    for(let i = 0; i < 2*len; i++) {
+    for (let i = 0; i < 2 * len; i++) {
         let teacherInd = 0;
         let teacher = teachersInfoSortedByJoiningDate[teacherInd];
-        while(takenTeachers[i%len].has(teacher.teacherCode)) {
+        while (takenTeachers[i % len].has(teacher.teacherCode)) {
             teacherInd++;
-            if(teacherInd === teachersInfoSortedByJoiningDate.length) {
+            if (teacherInd === teachersInfoSortedByJoiningDate.length) {
                 teacherInd = 0;
             }
             teacher = teachersInfoSortedByJoiningDate[teacherInd];
         }
         teachersInfoSortedByJoiningDate.push(teachersInfoSortedByJoiningDate[teacherInd]);
         teachersInfoSortedByJoiningDate.splice(teacherInd, 1);
-        takenTeachers[i%len].add(teacher.teacherCode);
+        takenTeachers[i % len].add(teacher.teacherCode);
 
         const name = teacher.firstName + ' ' + teacher.lastName;
-        examCommittee[i%len][2 + (i >= len)] = {
+        examCommittee[i % len][2 + (i >= len)] = {
             teacher: {
                 name: name,
                 designation: teacher.designation,
                 department: teacher.department,
-                remark: (i < len) ? '3rd Examiner': '4th Examiner'
+                remark: (i < len) ? '3rd Examiner' : '4th Examiner'
             }
+        }
+
+        // to handle teacher with courses database
+        const teacherName = removePunctuation(name);
+        const courseDetails = {
+            courseCode: examCommittee[i % len][0].course.code,
+            courseName: examCommittee[i % len][0].course.name,
+            remark: (i < len) ? '3rd Examiner' : '4th Examiner'
+        }
+        if (teacherWithCourses[teacherName]) {
+            // If the array already exists, push the new object
+            teacherWithCourses[teacherName].push(courseDetails);
+        } else {
+            // If the array doesn't exist, create it with the new object as the first element
+            teacherWithCourses[teacherName] = [courseDetails];
         }
     }
 
@@ -215,27 +279,28 @@ app.get('/', async (req, res) => {
         teachersInfoSortedByCourses.sort((a, b) => b.courses.length - a.courses.length);
         teachersInfoSortedByJoiningDate.sort((a, b) => new Date(a.joiningDate) - new Date(b.joiningDate));
         const sortedCourses = [];
-        for(let i = 4; i > 0; i--) {
+        for (let i = 4; i > 0; i--) {
             sortedCourses.push(...yearTermWiseCourse[i][1]);
             sortedCourses.push(...yearTermWiseCourse[i][2]);
         }
-        
-        const examCommittee = buildExamCommittee(sortedCourses, teachersInfoSortedByCourses, teachersInfoSortedByJoiningDate);
+
+        let teacherWithCourses = {};
+        const examCommittee = buildExamCommittee(sortedCourses, teachersInfoSortedByCourses, teachersInfoSortedByJoiningDate, teacherWithCourses);
         let yearTermWiseExamCommittee = new Array(7);
-        for(let i = 0; i < 7; i++) {
+        for (let i = 0; i < 7; i++) {
             yearTermWiseExamCommittee[i] = new Array(4);
-            for(let j = 0; j < 4; j++) {
+            for (let j = 0; j < 4; j++) {
                 yearTermWiseExamCommittee[i][j] = [];
             }
         }
 
-        for(let i = 0; i < examCommittee.length; i++) {
+        for (let i = 0; i < examCommittee.length; i++) {
             const year = examCommittee[i][0].course.year, term = examCommittee[i][0].course.term;
             yearTermWiseExamCommittee[year][term].push(examCommittee[i]);
         }
 
         // createRoutineDatabase(yearTermWiseExamCommittee);
-        updateDatabaseExamCommittee(yearTermWiseExamCommittee);
+        updateDatabaseExamCommittee(yearTermWiseExamCommittee, teacherWithCourses);
         res.json(yearTermWiseExamCommittee);
     } catch (error) {
         console.error("An error occurred into the generate random examComittee:", error);

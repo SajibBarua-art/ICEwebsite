@@ -34,7 +34,7 @@ const courseDetailsSchema = new mongoose.Schema({
     },
 });
 const CourseDetails = mongoose.model('courseDetails', courseDetailsSchema);
- 
+
 app.post("/", async (req, resp) => {
     try {
         const courseDetails = new CourseDetails(req.body);
@@ -44,9 +44,9 @@ app.post("/", async (req, resp) => {
             resp.send(req.body);
             console.log(result);
         } else {
-            console.log("Course Details already registered");
+            console.log("This course details already registered");
         }
- 
+
     } catch (e) {
         resp.status(400).send("!!! Error in courseDetails register panel !!!\n" + e);
     }

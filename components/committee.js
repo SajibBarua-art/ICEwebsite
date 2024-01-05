@@ -40,7 +40,7 @@ app.put('/updateExamCommitteeStatus', async (req, res) => {
     }
 });
 
-// Update isInExamCommittee status
+// Update routine committee status
 app.put('/updateRoutineCommitteeStatus', async (req, res) => {
     const { email, isInRoutineCommittee } = req.body;
   
