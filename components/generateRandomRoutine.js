@@ -10,6 +10,10 @@ const routineSchema = new mongoose.Schema({
     overall: {
         type: Array,
         required: true
+    },
+    yearTerm: {
+        type: Array,
+        required: true
     }
 });
 
@@ -28,11 +32,16 @@ const createRoutineDatabase = async (routineMatrix) => {
     }
 };
 
-const updateDatabaseRoutine = async (newRoutineMatrix) => {
+const updateDatabaseRoutine = async (newRoutineMatrix, yearTerm) => {
     try {
         const result = await Routine.findOneAndUpdate(
             {}, // Match all documents
-            { $set: { overall: newRoutineMatrix } }, // Update the "overall" field
+            { 
+                $set: { 
+                    overall: newRoutineMatrix,
+                    yearTerm: yearTerm
+                }
+            }, // Update the "overall" field
             { new: true } // Return the updated document
         );
 
@@ -122,9 +131,12 @@ app.get('/', async (req, res) => {
         theoryRoomTimeSlots.push(...extraComputerLabSlots);
         theoryRoomTimeSlots.push(...computerSingleSlots);
         buildRoutineMatrix(routineMatrix, theoryRoomTimeSlots, theoryDetails, allRoom);
+
+        // To memorize all the year-term
+        const yearTerm = buildYearTermMatrix(theoryDetails);
         
-        updateDatabaseRoutine(routineMatrix);
-        res.json(routineMatrix);
+        updateDatabaseRoutine(routineMatrix, yearTerm);
+        res.json({routineMatrix, yearTerm});
     } catch (error) {
         console.error("An error occurred into the generate random routine:", error);
         res.status(500).send("Internal Server Error");
@@ -217,6 +229,22 @@ const extraSlots = (rooms, totalDay, indexIncrement) => {
     return roomTimeSlots;
 }
 
+const buildYearTermMatrix = (coursesDetails) => {
+    let yearTermSet = new Set();
+    for(const courseDetails of coursesDetails) {
+        const year = courseDetails.course.year;
+        const term = courseDetails.course.term;
+        yearTermSet.add(year*10+term);
+    }
+    yt = [...yearTermSet];
+    yt.sort((a, b) => a - b);
+    yearTerm = []
+    yt.forEach(yt => {
+      yearTerm.push([Math.floor(yt/10), yt%10])
+    })
+    return yearTerm;
+}
+
 const buildRoutineMatrix = (routineMatrix, roomTimeSlots, coursesDetails, allRoom) => {
     if(coursesDetails.length > roomTimeSlots.length) {
         console.log("!!! Error, roomTimeSlots is less than coursesDetails !!!");
@@ -243,7 +271,7 @@ const buildRoutineMatrix = (routineMatrix, roomTimeSlots, coursesDetails, allRoo
         const term = courseDetails.course.term;
         const credit = courseDetails.course.credit;
         const teacherCode = courseDetails.teacher.teacherCode;
-        
+
         for(let j = 0; j < credit; j++) {
             var curSlotIndex = slotIndex;
             var day = roomTimeSlots[curSlotIndex].dayInd;

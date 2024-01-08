@@ -23,19 +23,6 @@ const examCommitteeSchema = new mongoose.Schema({
 
 const ExamComittee = mongoose.model('examcommittees', examCommitteeSchema);
 
-const createRoutineDatabase = async (examCommittee) => {
-    try {
-        const newExamComittee = new ExamComittee({
-            theory: examCommittee
-        });
-
-        await newExamComittee.save();
-        console.log('Exam Committee saved');
-    } catch (err) {
-        console.error('Error saving examComittee:', err);
-    }
-};
-
 const updateDatabaseExamCommittee = async (newExamComitteeMatrix, teacherWithCourses) => {
     try {
         const result = await ExamComittee.findOneAndUpdate(
