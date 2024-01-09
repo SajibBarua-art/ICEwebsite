@@ -38,6 +38,7 @@ const examComitteeOperation = require('./components/examCommitteeOperation');
 const generateLabExamCommittee = require('./components/generateLabExamCommittee');
 const labExamComitteeOperation = require('./components/labExamCommitteeOperation');
 const committee = require('./components/committee');
+const feedback = require('./components/feedback');
 
 // Use the routes for data management
 app.use('/teachers', teacherRoutes);
@@ -52,6 +53,7 @@ app.use('/examCommittee', examComitteeOperation);
 app.use('/generateLabExamCommittee', generateLabExamCommittee);
 app.use('/labExamCommittee', labExamComitteeOperation);
 app.use('/teacher', committee);
+app.use('/feedback', feedback);
 
 app.listen(port, () => {
     console.log(`Example app listening at http://localhost:${port}`)
