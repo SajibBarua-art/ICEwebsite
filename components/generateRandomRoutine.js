@@ -14,6 +14,10 @@ const routineSchema = new mongoose.Schema({
     yearTerm: {
         type: Array,
         required: true
+    },
+    routineTeachersName: {
+        type: Array,
+        required: true
     }
 });
 
@@ -32,14 +36,15 @@ const createRoutineDatabase = async (routineMatrix) => {
     }
 };
 
-const updateDatabaseRoutine = async (newRoutineMatrix, yearTerm) => {
+const updateDatabaseRoutine = async (newRoutineMatrix, yearTerm, teachersName) => {
     try {
         const result = await Routine.findOneAndUpdate(
             {}, // Match all documents
             { 
                 $set: { 
                     overall: newRoutineMatrix,
-                    yearTerm: yearTerm
+                    yearTerm: yearTerm,
+                    routineTeachersName: teachersName
                 }
             }, // Update the "overall" field
             { new: true } // Return the updated document
@@ -54,6 +59,16 @@ const updateDatabaseRoutine = async (newRoutineMatrix, yearTerm) => {
         console.error('Error updating routine:', err);
     }
 };
+
+const toGetTeachersName = (teachersInfo) => {
+    let allTeacherName = [];
+    for (const teacher of teachersInfo) {
+        const teacherName = `${teacher.firstName} ${teacher.lastName}`
+        allTeacherName.push(teacherName);
+    }
+
+    return allTeacherName;
+}
 
 // Generate a random routine route
 app.get('/', async (req, res) => {
@@ -135,8 +150,11 @@ app.get('/', async (req, res) => {
         // To memorize all the year-term
         const yearTerm = buildYearTermMatrix(theoryDetails);
         
-        updateDatabaseRoutine(routineMatrix, yearTerm);
-        res.json({routineMatrix, yearTerm});
+        // To memorize all the teachers name
+        const teachersName = toGetTeachersName(teachersInfo);
+
+        updateDatabaseRoutine(routineMatrix, yearTerm, teachersName);
+        res.json({routineMatrix, yearTerm, teachersName});
     } catch (error) {
         console.error("An error occurred into the generate random routine:", error);
         res.status(500).send("Internal Server Error");
