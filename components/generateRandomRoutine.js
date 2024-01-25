@@ -18,25 +18,67 @@ const routineSchema = new mongoose.Schema({
     routineTeachersName: {
         type: Array,
         required: true
+    },
+    year: {
+        type: String,
+        required: true
+    },
+    semester: {
+        type: String,
+        required: true
+    },
+    classStartDate: {
+        type: Date,
+        default: Date.now
+    },
+    id: { // id = year + semester
+        type: String,
+        unique: true,
+        required: true
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now,
     }
 });
 
 const Routine = mongoose.model('routine', routineSchema);
 
-const createRoutineDatabase = async (routineMatrix) => {
+const createRoutineDatabase = async (routineMatrix, yearTerm, teachersName, getYear, getSemester, getDate) => {
     try {
+        // Create a new routine object
         const newRoutine = new Routine({
-            overall: routineMatrix
+            overall: routineMatrix,
+            yearTerm: yearTerm,
+            routineTeachersName: teachersName,
+            year: getYear,
+            semester: getSemester,
+            date: getDate,
+            id: getYear + getSemester
         });
 
-        await newRoutine.save();
+        // Save the new routine
+        const savedRoutine = await newRoutine.save();
         console.log('Routine saved');
+
+        // Check if the total number of objects exceeds 10
+        const routineCount = await Routine.countDocuments();
+        console.log("Document count: ", routineCount);
+
+        if (routineCount > 10) {
+            // Find and delete the oldest routine based on the date
+            const oldestRoutine = await Routine.findOne().sort({ createdAt: 1 });
+            await Routine.findByIdAndDelete(oldestRoutine._id);
+            console.log('Oldest routine deleted');
+        }
+
+        return savedRoutine._id;
     } catch (err) {
         console.error('Error saving routine:', err);
     }
 };
 
-const updateDatabaseRoutine = async (newRoutineMatrix, yearTerm, teachersName) => {
+const updateDatabaseRoutine = async (newRoutineMatrix, yearTerm, teachersName, getYear, getSemester, getDate) => {
     try {
         const result = await Routine.findOneAndUpdate(
             {}, // Match all documents
@@ -44,7 +86,11 @@ const updateDatabaseRoutine = async (newRoutineMatrix, yearTerm, teachersName) =
                 $set: { 
                     overall: newRoutineMatrix,
                     yearTerm: yearTerm,
-                    routineTeachersName: teachersName
+                    routineTeachersName: teachersName,
+                    year: getYear,
+                    semester: getSemester,
+                    date: getDate,
+                    id: getYear + getSemester
                 }
             }, // Update the "overall" field
             { new: true } // Return the updated document
@@ -52,6 +98,7 @@ const updateDatabaseRoutine = async (newRoutineMatrix, yearTerm, teachersName) =
 
         if (result) {
             console.log('Routine updated');
+            return result;
         } else {
             console.log('No routine document found');
         }
@@ -73,6 +120,8 @@ const toGetTeachersName = (teachersInfo) => {
 // Generate a random routine route
 app.get('/', async (req, res) => {
     try {
+        const { year, semester, date } = req.query;
+
         // Retrieve all teachers info from the MongoDB database
         const teachersInfo = await Teacher.find({}).lean(); // Use .lean() to get plain JavaScript objects
         const coursesInfo = await CourseDetails.find({}).lean();
@@ -153,8 +202,9 @@ app.get('/', async (req, res) => {
         // To memorize all the teachers name
         const teachersName = toGetTeachersName(teachersInfo);
 
-        updateDatabaseRoutine(routineMatrix, yearTerm, teachersName);
-        res.json({routineMatrix, yearTerm, teachersName});
+        // const data = updateDatabaseRoutine(routineMatrix, yearTerm, teachersName, year, semester, date);
+        const data = createRoutineDatabase(routineMatrix, yearTerm, teachersName, year, semester, date);
+        res.json(data);
     } catch (error) {
         console.error("An error occurred into the generate random routine:", error);
         res.status(500).send("Internal Server Error");

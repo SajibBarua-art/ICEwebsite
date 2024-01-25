@@ -59,10 +59,15 @@ Api’s:
   
 **6. generateRandomRoutine:** To generate and store a new routine. It also gives the new generated routine as response.  
 Api’s:  
-- To generate, store and get the generated routine: api/generateRandomRoutine  
+- To generate: api/generateRandomRoutine?year=${getYear}&semester=${getSemester}&date=${getDate}
   
 **7. routine**  
 - overall: array (4D), dimensions: [day][year][term][timeSlot]  
+- yearTerm: Array
+- routineTeachersName: Array
+- year: String
+- semester: String
+- date: Date
 
 *Overview of the overall array:*
 - day: range[0, 4]; 0 means 'Sunday', 1 means 'Monday' and so on.
@@ -104,6 +109,15 @@ Api's:
 **14. routine committee panel**
 - api to update status: api/teacher/updateRoutineCommitteeStatus
 
+**15. course distribution**
+- To get: api/courseDistribution?examYear=${getExamYear}&semester=${getSemester}
+- To post: api/courseDistribution
+- To update/put: api/courseDistribution/update
+
+**16. class routine management**
+- To post: api/classRoutineManagement
+- To get by year and semester: api/classRoutineManagement/${getYear}/${getSemester}
+- To get by array index: api/classRoutineManagement/${routineIndex}
   
 **Scratch Front End code link:** https://github.com/SajibBarua-art/ICEwebsiteScratchClient  
 **Backend code link:** https://github.com/SajibBarua-art/ICEwebsite  

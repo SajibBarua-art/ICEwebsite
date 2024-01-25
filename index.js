@@ -2,7 +2,7 @@
 const express = require('express');
 const app = express();
 const cors = require("cors");
-const port = process.env.PORT || 5005;
+const port = process.env.PORT || 5000;
 
 require('dotenv').config();
 app.use(express.json());
@@ -39,6 +39,8 @@ const generateLabExamCommittee = require('./components/generateLabExamCommittee'
 const labExamComitteeOperation = require('./components/labExamCommitteeOperation');
 const committee = require('./components/committee');
 const feedback = require('./components/feedback');
+const courseDistribution = require('./components/courseDistribution');
+const classRoutineManagement = require('./components/classRoutineManagement');
 
 // Use the routes for data management
 app.use('/teachers', teacherRoutes);
@@ -54,6 +56,8 @@ app.use('/generateLabExamCommittee', generateLabExamCommittee);
 app.use('/labExamCommittee', labExamComitteeOperation);
 app.use('/teacher', committee);
 app.use('/feedback', feedback);
+app.use('/courseDistribution', courseDistribution);
+app.use('/classRoutineManagement', classRoutineManagement);
 
 app.listen(port, () => {
     console.log(`Example app listening at http://localhost:${port}`)
