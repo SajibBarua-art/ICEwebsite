@@ -263,8 +263,10 @@ app.get('/', async (req, res) => {
         const allTeacherCourse = buildTeacherCourseObjects(teachersInfo, coursesInfo);
         const yearTermWiseCourse = rearrangeCourses(allTeacherCourse);
         const teachersInfoSortedByCourses = teachersInfo, teachersInfoSortedByJoiningDate = teachersInfo;
+        
         teachersInfoSortedByCourses.sort((a, b) => b.courses.length - a.courses.length);
         teachersInfoSortedByJoiningDate.sort((a, b) => new Date(a.joiningDate) - new Date(b.joiningDate));
+        
         const sortedCourses = [];
         for (let i = 4; i > 0; i--) {
             sortedCourses.push(...yearTermWiseCourse[i][1]);

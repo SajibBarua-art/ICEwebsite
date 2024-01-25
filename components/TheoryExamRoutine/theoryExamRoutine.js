@@ -3,6 +3,12 @@ const app = express.Router();
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
+// Define a schema for the course
+const courseSchema = new mongoose.Schema({
+    code: { type: String, required: true },
+    name: { type: String, required: true }
+});
+
 const theoryExamRoutineSchema = new mongoose.Schema({
     examYear: String,
     semester: String,
@@ -22,12 +28,9 @@ const theoryExamRoutineSchema = new mongoose.Schema({
     theoryExamRoutine: {
         type: [
             {
-                course: {
-                    code: String,
-                    name: String
-                },
-                date: Date
-            },
+                course: courseSchema,
+                date: { type: Date, required: true }
+            }
         ],
         default: []
     },
@@ -99,14 +102,14 @@ app.put('/update', async (req, res) => {
 
         const existingData = await TheoryExamRoutine.findOne({ yearSemester: yearSemester });
 
-        if(!existingData) {
+        if (!existingData) {
             return res.status(404).json({ error: 'Data not found for the given year and semester.' });
         }
 
         existingData.theoryExamRoutine = newTheoryExamRoutine;
-        
+
         const updatedData = await existingData.save();
-        
+
         res.json(updatedData);
     } catch (error) {
         console.error("Error retrieving theory exam routine", error);

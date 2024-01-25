@@ -3,8 +3,8 @@ const app = express.Router();
 const mongoose = require('mongoose');
 const Teacher = mongoose.model('teachers');
 const CourseDetails = mongoose.model('courseDetails');
-const { rearrangeCourses } = require('./generateExamCommittee');
-const { shuffleArray } = require('./generateRandomRoutine');
+const { rearrangeCourses } = require('../TheoryExamCommittee/generateExamCommittee');
+const { shuffleArray } = require('../ClassRoutine/generateRandomRoutine');
 const FastPriorityQueue = require('fastpriorityqueue');
 
 const labExamCommitteeSchema = new mongoose.Schema({

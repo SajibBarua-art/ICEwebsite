@@ -31,16 +31,16 @@ const courseDetailsRoutes = require('./components/courseDetails');
 const studentRoutes = require('./components/students');
 const timeSlotRoutes = require('./components/timeSlot');
 const roomRoutes = require('./components/room');
-const generateRandomRoutine = require('./components/generateRandomRoutine');
-const routineOperation = require('./components/routineOperation');
-const generateExamCommittee = require('./components/generateExamCommittee');
-const examComitteeOperation = require('./components/examCommitteeOperation');
-const generateLabExamCommittee = require('./components/generateLabExamCommittee');
-const labExamComitteeOperation = require('./components/labExamCommitteeOperation');
+const generateRandomRoutine = require('./components/ClassRoutine/generateRandomRoutine');
+const routineOperation = require('./components/ClassRoutine/routineOperation');
+const generateExamCommittee = require('./components/TheoryExamCommittee/generateExamCommittee');
+const examComitteeOperation = require('./components/TheoryExamCommittee/examCommitteeOperation');
+const generateLabExamCommittee = require('./components/LabExamCommittee/generateLabExamCommittee');
+const labExamComitteeOperation = require('./components/LabExamCommittee/labExamCommitteeOperation');
 const committee = require('./components/committee');
 const feedback = require('./components/feedback');
 const courseDistribution = require('./components/courseDistribution');
-const classRoutineManagement = require('./components/classRoutineManagement');
+const classRoutineManagement = require('./components/ClassRoutine/classRoutineManagement');
 
 // Use the routes for data management
 app.use('/teachers', teacherRoutes);
