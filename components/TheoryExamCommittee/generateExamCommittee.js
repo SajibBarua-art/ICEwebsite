@@ -18,14 +18,68 @@ const examCommitteeSchema = new mongoose.Schema({
                 remark: { type: String }
             }
         ]
+    },
+    year: {
+        type: String,
+        required: true
+    },
+    semester: {
+        type: String,
+        required: true
+    },
+    classStartDate: {
+        type: Date,
+        default: Date.now
+    },
+    id: { // id = year + semester
+        type: String,
+        unique: true,
+        required: true
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now,
     }
 });
 
-const ExamComittee = mongoose.model('examcommittees', examCommitteeSchema);
+const ExamCommittee = mongoose.model('examcommittees', examCommitteeSchema);
+
+const createDutyRoaster = async (newExamComitteeMatrix, teacherWithCourses, getYear, getSemester, getDate) => {
+    try {
+        // Create a new Exam Committee object
+        const newDutyRoaster = new ExamCommittee({
+            theory: newExamComitteeMatrix,
+            teachers: teacherWithCourses,
+            year: getYear,
+            semester: getSemester,
+            date: getDate,
+            id: getYear + getSemester
+        });
+
+        // Save the new Exam Committee
+        const savedExamCommittee = await newDutyRoaster.save();
+        console.log('ExamCommittee saved');
+
+        // Check if the total number of objects exceeds 10
+        const countDatabase = await ExamCommittee.countDocuments();
+        console.log("Document count: ", countDatabase);
+
+        if (countDatabase > 10) {
+            // Find and delete the oldest Exam Committee based on the date
+            const oldestExamCommittee = await ExamCommittee.findOne().sort({ createdAt: 1 });
+            await ExamCommittee.findByIdAndDelete(oldestExamCommittee._id);
+            console.log('Oldest Exam Committee deleted');
+        }
+
+        return savedExamCommittee._id;
+    } catch (err) {
+        console.error('Error saving Exam Committee:', err);
+    }
+};
 
 const updateDatabaseExamCommittee = async (newExamComitteeMatrix, teacherWithCourses) => {
     try {
-        const result = await ExamComittee.findOneAndUpdate(
+        const result = await ExamCommittee.findOneAndUpdate(
             {}, // Match all documents
             {
                 $set: {

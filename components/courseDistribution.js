@@ -58,7 +58,7 @@ app.post('/', async (req, res) => {
     try {
         // Extracting examYear, semester, and courseDetails from the request body
         const { examYear, semester, courseDetails } = req.body;
-        const yearSemester = examYear + semester;
+        const yearSemester = examYear.toString() + semester.toString();
 
         // Creating a new CourseDistribution instance
         const newCourseDistribution = new CourseDistribution({ examYear, semester, yearSemester, courseDetails });
@@ -71,11 +71,15 @@ app.post('/', async (req, res) => {
     } catch (error) {
         console.error('Error creating course distribution:', error);
 
+        console.log(error.code);
+
         if (error.code === 11000) {
-            res.status(500).json({ error: `The specific exam year and semester are already stored in database!` });
+            console.log(1);
+            res.status(500).json({ error: 'The specific exam year and semester are already stored in database!'});
         }
         else {
-            res.status(500).json({ error: 'Internal Server Error' });
+            console.log(2);
+            res.status(500).json({ error: 'Internal Server Error2' });
         }
     }
 });

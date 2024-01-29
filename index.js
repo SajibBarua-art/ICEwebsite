@@ -41,6 +41,8 @@ const committee = require('./components/committee');
 const feedback = require('./components/feedback');
 const courseDistribution = require('./components/courseDistribution');
 const classRoutineManagement = require('./components/ClassRoutine/classRoutineManagement');
+const theoryExamRoutine = require('./components/TheoryExamRoutine/theoryExamRoutine');
+const theoryDutyRoaster = require('./components/DutyRoaster/generateTheoryDutyRoaster');
 
 // Use the routes for data management
 app.use('/teachers', teacherRoutes);
@@ -58,6 +60,8 @@ app.use('/teacher', committee);
 app.use('/feedback', feedback);
 app.use('/courseDistribution', courseDistribution);
 app.use('/classRoutineManagement', classRoutineManagement);
+app.use('/theoryExamRoutine', theoryExamRoutine);
+app.use('/generateTheoryDutyRoaster', theoryDutyRoaster);
 
 app.listen(port, () => {
     console.log(`Example app listening at http://localhost:${port}`)

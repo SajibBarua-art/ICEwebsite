@@ -2,23 +2,20 @@ const express = require('express');
 const app = express.Router();
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
-
-// Define a schema for the course
-const courseSchema = new mongoose.Schema({
-    code: { type: String, required: true },
-    name: { type: String, required: true }
-});
+const CourseDistribution = mongoose.model('courseDistribution');
 
 const theoryExamRoutineSchema = new mongoose.Schema({
     examYear: String,
     semester: String,
-    totalBatch: Number,
-    gapBetweenExams: Number,
+    totalBatch: String,
+    gapBetweenExams: String,
     sessions: [
         {
-            sessionName: String,
+            session: String,
             startDate: Date,
-            totalStudents: Number,
+            totalStudents: String,
+            year: String,
+            term: String
         },
     ],
     unavailableDates: {
@@ -28,7 +25,7 @@ const theoryExamRoutineSchema = new mongoose.Schema({
     theoryExamRoutine: {
         type: [
             {
-                course: courseSchema,
+                courseCode: {type: String, required: true},
                 date: { type: Date, required: true }
             }
         ],
@@ -48,30 +45,28 @@ app.use(bodyParser.json());
 app.post('/', async (req, res) => {
     try {
         // Extract data from the request body
-        const {
-            examYear,
-            semester,
-            totalBatch,
-            gapBetweenExams,
-            sessions,
-            unavailableDates,
-        } = req.body;
-        const yearSemester = examYear + semester;
+        const theoryExamRoutine = new TheoryExamRoutine(req.body);
+        const routine = theoryExamRoutine.toObject();
+        
+        routine.yearSemester = routine.examYear.toString() + routine.semester.toString();
 
-        // Validate and save the exam routine
-        const newTheoryExamRoutine = new TheoryExamRoutine({
-            examYear,
-            semester,
-            totalBatch,
-            gapBetweenExams,
-            sessions,
-            unavailableDates,
-            yearSemester
-        });
+        const courseDistribution = await CourseDistribution.find({ yearSemester: routine.yearSemester }).lean();
 
-        await newTheoryExamRoutine.save();
+        let courses = [];
+        for(const courseDetails of courseDistribution[0].courseDetails) {
+            courses.push(courseDetails.courseCode);
+        }
 
-        res.json({ success: true, message: 'Theory exam routine saved successfully.' });
+        const newRoutine = buildTheoryExamRoutine(routine.sessions, routine.unavailableDates, courses, routine.gapBetweenExams);
+
+        routine.theoryExamRoutine = newRoutine;
+
+        console.log(routine);
+        const newTheoryExamRoutine = new TheoryExamRoutine(routine);
+
+        const respRoutine = await newTheoryExamRoutine.save();
+
+        res.json(respRoutine);
     } catch (error) {
         console.error('Error saving exam routine:', error);
         res.status(500).json({ success: false, message: 'Internal Server Error' });
@@ -156,10 +151,30 @@ const sortObjectsByYearAndTerm = (objectsArray) => {
     return objectsArray.sort(compareObjects);
 }
 
-const buildTheoryExamRoutine = (startDate, courses, unavailableDates) => {
+// array of course_code to rearrange by year and term
+const rearrangeByYearAndTerm = (arr) => {
+    var yearTermWiseCourse = new Array(7);
+    for (let i = 0; i < 7; i++) {
+        yearTermWiseCourse[i] = new Array(4);
+        for (let j = 0; j < 4; j++) {
+            yearTermWiseCourse[i][j] = [];
+        }
+    }
+
+    for (const course of arr) {
+        const splitCourse = course.split('-');
+        
+        // to ignore all lab classes
+        if(parseInt(splitCourse[1][3]) % 2 === 0) continue;
+
+        yearTermWiseCourse[parseInt(splitCourse[1][0], 10)][parseInt(splitCourse[1][1], 10)].push(course);
+    }
+
+    return yearTermWiseCourse;
+}
+
+const buildRoutine = (startDate, unavailableDates, gap, courses) => {
     let currentDate = new Date(startDate);
-    // const courses = ['3201', '3202', '3203', '3205', '2201', '2202', '2203', '2204'];
-    // const unavailableDates = ['2024-01-28', '2024-01-29', '2024-01-24', '2022-11-05'];
     let theoryExamRoutine = [];
 
     for (const course of courses) {
@@ -172,22 +187,35 @@ const buildTheoryExamRoutine = (startDate, courses, unavailableDates) => {
         }
 
         // Skip unavailable dates
-        while (unavailableDates.includes(currentDate.toISOString().split('T')[0])) {
+        while (unavailableDates.length !== 0 && unavailableDates.includes(currentDate.toISOString().split('T')[0])) {
             currentDate.setDate(currentDate.getDate() + 1);
             dayIndex = getDayOfWeek(currentDate);
         }
 
         const allocation = {
             date: new Date(currentDate),
-            course: course
+            courseCode: course
         };
         theoryExamRoutine.push(allocation);
+        unavailableDates.push(currentDate);
 
         // Add three days (3 * 24 hours) to the date for the next course
-        currentDate.setDate(currentDate.getDate() + 3);
+        currentDate.setDate(currentDate.getDate() + gap);
+    }
+    return theoryExamRoutine;
+}
+
+const buildTheoryExamRoutine = (sessions, unavailableDates, courses, gap) => {
+    // to sorted courses by year and term
+    const yearTermWiseCourses = rearrangeByYearAndTerm(courses);
+    let takenDates = unavailableDates.slice();
+
+    let routine = [];
+    for(const session of sessions) {
+        routine.push(...buildRoutine(session.startDate, takenDates, gap, yearTermWiseCourses[session.year][session.term]));
     }
 
-    return theoryExamRoutine;
+    return routine;
 }
 
 module.exports = app;

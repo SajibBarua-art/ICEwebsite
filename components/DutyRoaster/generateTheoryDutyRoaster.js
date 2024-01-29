@@ -1,21 +1,72 @@
 const express = require('express');
 const app = express.Router();
+const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const Teacher = mongoose.model('teachers');
 const CourseDetails = mongoose.model('courseDetails');
 
 const dutyRoasterSchema = new mongoose.Schema({
-    overall: {
+    examYear: {
+        type: String,
+        required: true
+    },
+    semester: {
+        type: String,
+        required: true
+    },
+    yearSemester: {
+        type: String,
+        required: true,
+        unique: true
+    },
+    theory: {
         type: Array,
         required: true
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now,
     }
 });
 
-const DutyRoaster = mongoose.model('dutyroaster', dutyRoasterSchema);
+const TheoryDutyRoaster = mongoose.model('theorydutyroaster', dutyRoasterSchema);
+
+// Middleware to parse JSON data
+app.use(bodyParser.json());
+
+const createDutyRoaster = async (examYear, semester, theory) => {
+    try {
+        // Create a new routine object
+        const newDutyRoaster = new TheoryDutyRoaster({
+            examYear, 
+            semester,
+            yearSemester: examYear.toString() + semester.toString(),
+            theory
+        });
+
+        // Save the new routine
+        const savedRoutine = await newDutyRoaster.save();
+        console.log('Duty Roaster saved');
+
+        // Check if the total number of objects exceeds 10
+        const routineCount = await TheoryDutyRoaster.countDocuments();
+
+        if (routineCount > 10) {
+            // Find and delete the oldest routine based on the date
+            const oldestRoutine = await TheoryDutyRoaster.findOne().sort({ createdAt: 1 });
+            await TheoryDutyRoaster.findByIdAndDelete(oldestRoutine._id);
+            console.log('Oldest Duty Roaster deleted');
+        }
+
+        return savedRoutine._id;
+    } catch (err) {
+        console.error('Error saving duty roaster:', err);
+    }
+};
 
 const updateDutyRoaster = async (newDutyRoasterMatrix) => {
     try {
-        const result = await DutyRoaster.findOneAndUpdate(
+        const result = await TheoryDutyRoaster.findOneAndUpdate(
             {}, // Match all documents
             {
                 $set: {
@@ -97,7 +148,7 @@ const removePunctuation = (inputString) => {
     return inputString.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "");
 }
 
-const buildExamCommittee = (teacherCourseDetails, teachersInfoSortedByJoiningDate) => {
+const buildDutyRoaster = (teacherCourseDetails, teachersInfoSortedByJoiningDate) => {
     const len = teacherCourseDetails.length;
     const dutyRoaster = new Array(len);
     for (let i = 0; i < len; i++) {
@@ -169,11 +220,14 @@ const buildExamCommittee = (teacherCourseDetails, teachersInfoSortedByJoiningDat
 }
 
 // Generate a random examComittee route
-app.get('/', async (req, res) => {
+app.post('/', async (req, res) => {
     try {
+        const theoryDutyRoaster = new TheoryDutyRoaster(req.body);
+        console.log(theoryDutyRoaster);
+
         // Retrieve all teachers info from the MongoDB database
         const teachersInfo = await Teacher.find({}).lean(); // Use .lean() to get plain JavaScript objects
-        const coursesInfo = await CourseDetails.find({}).lean();
+        const coursesInfo = await CourseDetails.find({ term: theoryDutyRoaster.semester, type: 'theory' }).lean();
 
         const allTeacherCourse = buildTeacherCourseObjects(teachersInfo, coursesInfo);
         const yearTermWiseCourse = rearrangeCourses(allTeacherCourse);
@@ -187,7 +241,7 @@ app.get('/', async (req, res) => {
             sortedCourses.push(...yearTermWiseCourse[i][2]);
         }
 
-        const dutyRoaster = buildExamCommittee(sortedCourses, teachersInfoSortedByJoiningDate);
+        const dutyRoaster = buildDutyRoaster(sortedCourses, teachersInfoSortedByJoiningDate);
         let yearTermWiseDutyRoaster = new Array(7);
         for (let i = 0; i < 7; i++) {
             yearTermWiseDutyRoaster[i] = new Array(4);
@@ -201,8 +255,8 @@ app.get('/', async (req, res) => {
             yearTermWiseDutyRoaster[year][term].push(dutyRoaster[i]);
         }
 
-        // createDutyRoaster(yearTermWiseDutyRoaster);
-        updateDutyRoaster(yearTermWiseDutyRoaster);
+        createDutyRoaster(theoryDutyRoaster.examYear, theoryDutyRoaster.semester, yearTermWiseDutyRoaster);
+        // updateDutyRoaster(yearTermWiseDutyRoaster);
         res.json(yearTermWiseDutyRoaster);
     } catch (error) {
         console.error("An error occurred into the generate random examComittee:", error);
@@ -210,4 +264,4 @@ app.get('/', async (req, res) => {
     }
 });
 
-module.exports = { app };
+module.exports = app;

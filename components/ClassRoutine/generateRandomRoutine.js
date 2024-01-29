@@ -31,7 +31,7 @@ const routineSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     },
-    id: { // id = year + semester
+    yearSemester: { // yearSemester = year + semester
         type: String,
         unique: true,
         required: true
@@ -54,7 +54,7 @@ const createRoutineDatabase = async (routineMatrix, yearTerm, teachersName, getY
             year: getYear,
             semester: getSemester,
             date: getDate,
-            id: getYear + getSemester
+            yearSemester: getYear.toString() + getSemester.toString()
         });
 
         // Save the new routine
@@ -90,7 +90,7 @@ const updateDatabaseRoutine = async (newRoutineMatrix, yearTerm, teachersName, g
                     year: getYear,
                     semester: getSemester,
                     date: getDate,
-                    id: getYear + getSemester
+                    yearSemester: getYear + getSemester
                 }
             }, // Update the "overall" field
             { new: true } // Return the updated document

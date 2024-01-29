@@ -17,4 +17,24 @@ app.get('/', async (req, res) => {
   }
 });
 
+// Route to delete object by examYear and semester
+app.delete('/deleteObject/:year/:semester', async (req, res) => {
+  const { year, semester } = req.params;
+  const id = year + semester;
+
+  try {
+    // Find and delete the object
+    const deletedObject = await YourModel.findOneAndDelete({ id });
+
+    if (!deletedObject) {
+      return res.status(404).json({ message: 'Object not found' });
+    }
+
+    return res.status(200).json({ message: 'Object deleted successfully', deletedObject });
+  } catch (error) {
+    console.error('Error deleting object:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
 module.exports = app;
