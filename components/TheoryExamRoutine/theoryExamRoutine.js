@@ -25,15 +25,11 @@ const theoryExamRoutineSchema = new mongoose.Schema({
     theoryExamRoutine: {
         type: [
             {
-                courseCode: {type: String, required: true},
-                date: { type: Date, required: true }
+                courseCode: { type: String, required: true },
+                date: { type: String, required: true }
             }
         ],
         default: []
-    },
-    yearSemester: {
-        type: String,
-        unique: true
     }
 });
 
@@ -47,21 +43,23 @@ app.post('/', async (req, res) => {
         // Extract data from the request body
         const theoryExamRoutine = new TheoryExamRoutine(req.body);
         const routine = theoryExamRoutine.toObject();
-        
-        routine.yearSemester = routine.examYear.toString() + routine.semester.toString();
 
-        const courseDistribution = await CourseDistribution.find({ yearSemester: routine.yearSemester }).lean();
+        const yearSemester = routine.examYear.toString() + routine.semester.toString();
+
+        const courseDistribution = await CourseDistribution.find({ yearSemester }).lean();
 
         let courses = [];
-        for(const courseDetails of courseDistribution[0].courseDetails) {
-            courses.push(courseDetails.courseCode);
+        if (courseDistribution.length) {
+            for (const courseDetails of courseDistribution[0].courseDetails) {
+                courses.push(courseDetails.courseCode);
+            }
         }
 
         const newRoutine = buildTheoryExamRoutine(routine.sessions, routine.unavailableDates, courses, routine.gapBetweenExams);
 
         routine.theoryExamRoutine = newRoutine;
 
-        console.log(routine);
+        // console.log(routine);
         const newTheoryExamRoutine = new TheoryExamRoutine(routine);
 
         const respRoutine = await newTheoryExamRoutine.save();
@@ -111,6 +109,14 @@ app.put('/update', async (req, res) => {
         res.status(500).json({ error: 'Internal Serval Error' })
     }
 })
+
+const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const day = date.getDate();
+    const month = date.getMonth() + 1; // Months are zero-based
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+};
 
 // Function to get the day of the week for the current date
 const getDayOfWeek = (timestamp) => {
@@ -163,9 +169,9 @@ const rearrangeByYearAndTerm = (arr) => {
 
     for (const course of arr) {
         const splitCourse = course.split('-');
-        
+
         // to ignore all lab classes
-        if(parseInt(splitCourse[1][3]) % 2 === 0) continue;
+        if (parseInt(splitCourse[1][3]) % 2 === 0) continue;
 
         yearTermWiseCourse[parseInt(splitCourse[1][0], 10)][parseInt(splitCourse[1][1], 10)].push(course);
     }
@@ -173,27 +179,30 @@ const rearrangeByYearAndTerm = (arr) => {
     return yearTermWiseCourse;
 }
 
-const buildRoutine = (startDate, unavailableDates, gap, courses) => {
+const buildRoutine = (startDate, unavailableDates, dayGap, courses) => {
     let currentDate = new Date(startDate);
     let theoryExamRoutine = [];
+    const gap = parseInt(dayGap, 10);
 
     for (const course of courses) {
         let dayIndex = getDayOfWeek(currentDate);
 
         // Skip weekends (Friday and Saturday)
         while (dayIndex === 5 || dayIndex === 6) {
+            // add 1 day
             currentDate.setDate(currentDate.getDate() + 1);
             dayIndex = getDayOfWeek(currentDate);
         }
 
         // Skip unavailable dates
         while (unavailableDates.length !== 0 && unavailableDates.includes(currentDate.toISOString().split('T')[0])) {
+            // add 1 day
             currentDate.setDate(currentDate.getDate() + 1);
             dayIndex = getDayOfWeek(currentDate);
         }
 
         const allocation = {
-            date: new Date(currentDate),
+            date: formatDate(currentDate),
             courseCode: course
         };
         theoryExamRoutine.push(allocation);
@@ -211,7 +220,7 @@ const buildTheoryExamRoutine = (sessions, unavailableDates, courses, gap) => {
     let takenDates = unavailableDates.slice();
 
     let routine = [];
-    for(const session of sessions) {
+    for (const session of sessions) {
         routine.push(...buildRoutine(session.startDate, takenDates, gap, yearTermWiseCourses[session.year][session.term]));
     }
 

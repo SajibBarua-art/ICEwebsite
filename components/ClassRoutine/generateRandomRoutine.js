@@ -31,20 +31,23 @@ const routineSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     },
-    yearSemester: { // yearSemester = year + semester
-        type: String,
-        unique: true,
-        required: true
-    },
     createdAt: {
         type: Date,
         default: Date.now,
+    },
+    routineDetails: {
+        type: [
+            {
+                session: String,
+                totalStudents: String
+            }
+        ]
     }
 });
 
 const Routine = mongoose.model('routine', routineSchema);
 
-const createRoutineDatabase = async (routineMatrix, yearTerm, teachersName, getYear, getSemester, getDate) => {
+const createRoutineDatabase = async (routineMatrix, yearTerm, teachersName, getYear, getSemester, getDate, getRoutineDetails) => {
     try {
         // Create a new routine object
         const newRoutine = new Routine({
@@ -53,9 +56,11 @@ const createRoutineDatabase = async (routineMatrix, yearTerm, teachersName, getY
             routineTeachersName: teachersName,
             year: getYear,
             semester: getSemester,
-            date: getDate,
-            yearSemester: getYear.toString() + getSemester.toString()
+            classStartDate: getDate,
+            routineDetails: getRoutineDetails
         });
+
+        console.log(getYear, getSemester);
 
         // Save the new routine
         const savedRoutine = await newRoutine.save();
@@ -66,13 +71,13 @@ const createRoutineDatabase = async (routineMatrix, yearTerm, teachersName, getY
         console.log("Document count: ", routineCount);
 
         if (routineCount > 10) {
-            // Find and delete the oldest routine based on the date
+            // Find and delete the oldest routine based on the classStartDate
             const oldestRoutine = await Routine.findOne().sort({ createdAt: 1 });
             await Routine.findByIdAndDelete(oldestRoutine._id);
             console.log('Oldest routine deleted');
         }
 
-        return savedRoutine._id;
+        return savedRoutine;
     } catch (err) {
         console.error('Error saving routine:', err);
     }
@@ -89,7 +94,7 @@ const updateDatabaseRoutine = async (newRoutineMatrix, yearTerm, teachersName, g
                     routineTeachersName: teachersName,
                     year: getYear,
                     semester: getSemester,
-                    date: getDate,
+                    classStartDate: getDate,
                     yearSemester: getYear + getSemester
                 }
             }, // Update the "overall" field
@@ -118,9 +123,11 @@ const toGetTeachersName = (teachersInfo) => {
 }
 
 // Generate a random routine route
-app.get('/', async (req, res) => {
+app.post('/', async (req, res) => {
     try {
-        const { year, semester, date } = req.query;
+        const { year, semester, classStartDate, routineDetails } = req.body;
+
+        console.log(routineDetails);
 
         // Retrieve all teachers info from the MongoDB database
         const teachersInfo = await Teacher.find({}).lean(); // Use .lean() to get plain JavaScript objects
@@ -202,8 +209,9 @@ app.get('/', async (req, res) => {
         // To memorize all the teachers name
         const teachersName = toGetTeachersName(teachersInfo);
 
-        // const data = updateDatabaseRoutine(routineMatrix, yearTerm, teachersName, year, semester, date);
-        const data = createRoutineDatabase(routineMatrix, yearTerm, teachersName, year, semester, date);
+        // const data = updateDatabaseRoutine(routineMatrix, yearTerm, teachersName, year, semester, classStartDate);
+        const data = await createRoutineDatabase(routineMatrix, yearTerm, teachersName, year, semester, classStartDate, routineDetails);
+        console.log(data);
         res.json(data);
     } catch (error) {
         console.error("An error occurred into the generate random routine:", error);
