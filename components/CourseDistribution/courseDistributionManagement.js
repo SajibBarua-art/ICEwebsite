@@ -3,20 +3,9 @@ const app = express.Router();
 const mongoose = require('mongoose');
 const Routine = mongoose.model('routine');
 
-const routineManagementSchema = new mongoose.Schema({
-    overall: {
-        type: Array,
-        required: true
-    },
-    yearTerm: {
-        type: Array,
-        required: true
-    },
-    routineTeachersName: {
-        type: Array,
-        required: true
-    },
-    year: {
+// Create Mongoose schema and model for course distribution
+const courseDistributionManagementSchema = new mongoose.Schema({
+    examYear: {
         type: String,
         required: true
     },
@@ -24,38 +13,39 @@ const routineManagementSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    date: {
-        type: Date,
-        default: Date.now
-    },
-    yearSemester: { // yearSemester = year + semester
+    yearSemester: {
         type: String,
-        unique: true,
+        required: true,
+        unique: true
+    },
+    courseDetails: {
+        type: [
+            {
+                courseCode: String,
+                teacherCode: []
+            }
+        ],
         required: true
-    },
-    createdAt: {
-        type: Date,
-        default: Date.now,
-    },
+    }
 });
 
-const RoutineManagement = mongoose.model('RoutineManagement', routineManagementSchema);
+const CourseDistributionManagement = mongoose.model('CourseDistributionManagement', courseDistributionManagementSchema);
 
 // to store routine data permanently
 app.post('/', async (req, res) => {
     try {
         // Retrieve the current routine data from the request body
-        const currentRoutineData = req.body;
+        const currentCourseDistributionData = req.body;
 
         // Save the current routine to the Routine model
-        const currentRoutine = new Routine(currentRoutineData);
-        await currentRoutine.save();
+        const currentCourseDistribution = new Routine(currentCourseDistributionData);
+        await currentCourseDistribution.save();
 
-        // Save the current routine to the RoutineManagement model
-        const routineManagement = new RoutineManagement({ routine: currentRoutineData });
-        await routineManagement.save();
+        // Save the current routine to the CourseDistributionManagement model
+        const courseDistribution = new CourseDistributionManagement({ routine: currentCourseDistributionData });
+        await courseDistribution.save();
 
-        res.json({ success: true, routineManagement });
+        res.json({ success: true, error: 'Routine published successfully.' });
     } catch (error) {
         console.error('Error publishing routine:', error);
         res.status(500).json({ success: false, message: 'Internal Server Error' });
@@ -69,7 +59,7 @@ app.get('/:year/:semester', async (req, res) => {
         const routineId = year + semester;
 
         // Find the routine by yearSemester
-        const routine = await RoutineManagement.findOne({ yearSemester: routineId });
+        const routine = await CourseDistributionManagement.findOne({ yearSemester: routineId });
 
         if (!routine) {
             return res.status(404).json({ error: 'Routine not found' });
@@ -88,7 +78,7 @@ app.get('/:arrayIndex', async (req, res) => {
         const arrayIndex = parseInt(req.params.arrayIndex, 10);
 
         // Find the routine and project only the specified array element by index
-        const routine = await RoutineManagement.findOne({}, { overall: { $slice: [arrayIndex, 1] } });
+        const routine = await CourseDistributionManagement.findOne({}, { overall: { $slice: [arrayIndex, 1] } });
 
         if (!routine) {
             return res.status(404).json({ error: 'Routine not found' });
