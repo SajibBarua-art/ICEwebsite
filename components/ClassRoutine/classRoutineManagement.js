@@ -28,7 +28,7 @@ const routineManagementSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     },
-    id: { // id = year + semester
+    yearSemester: { // yearSemester = year + semester
         type: String,
         unique: true,
         required: true
@@ -68,8 +68,8 @@ app.get('/:year/:semester', async (req, res) => {
         const year = req.params.year, semester = req.params.semester;
         const routineId = year + semester;
 
-        // Find the routine by id
-        const routine = await RoutineManagement.findOne({ id: routineId });
+        // Find the routine by yearSemester
+        const routine = await RoutineManagement.findOne({ yearSemester: routineId });
 
         if (!routine) {
             return res.status(404).json({ error: 'Routine not found' });

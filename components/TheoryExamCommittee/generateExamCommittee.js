@@ -31,11 +31,6 @@ const examCommitteeSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     },
-    id: { // id = year + semester
-        type: String,
-        unique: true,
-        required: true
-    },
     createdAt: {
         type: Date,
         default: Date.now,
@@ -44,20 +39,19 @@ const examCommitteeSchema = new mongoose.Schema({
 
 const ExamCommittee = mongoose.model('examcommittees', examCommitteeSchema);
 
-const createDutyRoaster = async (newExamComitteeMatrix, teacherWithCourses, getYear, getSemester, getDate) => {
+const createExamCommittee = async (newExamComitteeMatrix, teacherWithCourses, getYear, getSemester, getDate) => {
     try {
         // Create a new Exam Committee object
-        const newDutyRoaster = new ExamCommittee({
+        const newExamCommittee = new ExamCommittee({
             theory: newExamComitteeMatrix,
             teachers: teacherWithCourses,
             year: getYear,
             semester: getSemester,
-            date: getDate,
-            id: getYear + getSemester
+            classStartDate: getDate
         });
 
         // Save the new Exam Committee
-        const savedExamCommittee = await newDutyRoaster.save();
+        const savedExamCommittee = await newExamCommittee.save();
         console.log('ExamCommittee saved');
 
         // Check if the total number of objects exceeds 10
@@ -65,7 +59,7 @@ const createDutyRoaster = async (newExamComitteeMatrix, teacherWithCourses, getY
         console.log("Document count: ", countDatabase);
 
         if (countDatabase > 10) {
-            // Find and delete the oldest Exam Committee based on the date
+            // Find and delete the oldest Exam Committee based on the createdAt
             const oldestExamCommittee = await ExamCommittee.findOne().sort({ createdAt: 1 });
             await ExamCommittee.findByIdAndDelete(oldestExamCommittee._id);
             console.log('Oldest Exam Committee deleted');

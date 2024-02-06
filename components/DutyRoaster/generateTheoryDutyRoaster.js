@@ -14,11 +14,6 @@ const dutyRoasterSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    yearSemester: {
-        type: String,
-        required: true,
-        unique: true
-    },
     theory: {
         type: Array,
         required: true
@@ -40,7 +35,6 @@ const createDutyRoaster = async (examYear, semester, theory) => {
         const newDutyRoaster = new TheoryDutyRoaster({
             examYear, 
             semester,
-            yearSemester: examYear.toString() + semester.toString(),
             theory
         });
 

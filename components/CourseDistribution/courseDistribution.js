@@ -22,7 +22,7 @@ const courseDistributionSchema = new mongoose.Schema({
         type: [
             {
                 courseCode: String,
-                teacherCode: Array
+                teacherCode: []
             }
         ],
         required: true
@@ -74,11 +74,9 @@ app.post('/', async (req, res) => {
         console.log(error.code);
 
         if (error.code === 11000) {
-            console.log(1);
             res.status(500).json({ error: 'The specific exam year and semester are already stored in database!'});
         }
         else {
-            console.log(2);
             res.status(500).json({ error: 'Internal Server Error2' });
         }
     }

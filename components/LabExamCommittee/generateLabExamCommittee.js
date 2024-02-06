@@ -11,27 +11,62 @@ const labExamCommitteeSchema = new mongoose.Schema({
     lab: {
         type: Array,
         required: true
+    },
+    year: {
+        type: String,
+        required: true
+    },
+    semester: {
+        type: String,
+        required: true
+    },
+    classStartDate: {
+        type: Date,
+        default: Date.now
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now,
     }
 });
 
-const ExamComittee = mongoose.model('labexamcommittees', labExamCommitteeSchema);
+const LabExamCommittee = mongoose.model('labexamcommittees', labExamCommitteeSchema);
 
-const createLabExamCommitteeDatabase = async (examCommittee) => {
+const createLabExamCommitteeDatabase = async (newExamComitteeMatrix, getYear, getSemester, getDate) => {
     try {
-        const newExamComittee = new ExamComittee({
-            lab: examCommittee
+        // Create a new Exam Committee object
+        const newExamCommittee = new ExamCommittee({
+            theory: newExamComitteeMatrix,
+            teachers: teacherWithCourses,
+            year: getYear,
+            semester: getSemester,
+            classStartDate: getDate
         });
 
-        await newExamComittee.save();
-        console.log('Lab Exam Committee saved');
+        // Save the new Exam Committee
+        const savedExamCommittee = await newExamCommittee.save();
+        console.log('ExamCommittee saved');
+
+        // Check if the total number of objects exceeds 10
+        const countDatabase = await LabExamCommittee.countDocuments();
+        console.log("Document count: ", countDatabase);
+
+        if (countDatabase > 10) {
+            // Find and delete the oldest Exam Committee based on the createdAt
+            const oldestExamCommittee = await LabExamCommittee.findOne().sort({ createdAt: 1 });
+            await ExamCommittee.findByIdAndDelete(oldestExamCommittee._id);
+            console.log('Oldest Exam Committee deleted');
+        }
+
+        return savedExamCommittee._id;
     } catch (err) {
-        console.error('Error saving on lab exam committee:', err);
+        console.error('Error saving Exam Committee:', err);
     }
 };
 
 const updateDatabaseLabExamCommittee = async (newExamComitteeMatrix) => {
     try {
-        const result = await ExamComittee.findOneAndUpdate(
+        const result = await LabExamCommittee.findOneAndUpdate(
             {}, // Match all documents
             { $set: { lab: newExamComitteeMatrix } },
             { new: true } // Return the updated document

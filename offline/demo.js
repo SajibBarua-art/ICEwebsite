@@ -13,16 +13,10 @@
 // MRH: MATH-1211
 // BMS: BLWS
 
-const FastPriorityQueue = require('fastpriorityqueue');
+const year = '2', semester = '3';
+const y = 2, s = '3';
 
-// Create a priority queue
-const priorityQueue = new FastPriorityQueue((a, b) => a.priority > b.priority);
+const yearSemester = year.toString() + semester.toString();
+const ys = y.toString() + s.toString();
 
-// Enqueue elements with priorities
-priorityQueue.add({code: 'jjj', priority: 3});
-priorityQueue.add({code: 'aaa', priority: 1});
-priorityQueue.add({code: 'kkk', priority: 2});
-
-// Dequeue elements with the highest priority
-console.log("Front element:", priorityQueue.poll()); // Output: 1
-console.log("Front element:", priorityQueue.poll()); // Output: 2
+console.log(yearSemester, ys);
