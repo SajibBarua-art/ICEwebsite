@@ -55,10 +55,10 @@ const createTimeSlot = async () => {
 app.get("/", async (req, resp) => {
     try {
         const timeSlot = await TimeSlot.find({});
-        resp.json(timeSlot); // Send the users as a JSON response
+        res.json({ success: true, data: timeSlot }); // Send the users as a JSON response
     } catch (error) {
         console.error("An error occurred in time-slot get function:", error);
-        resp.status(500).send("Internal Server Error");
+        res.send({ success: false, error: "Internal Server Error" });
     }
 });
 

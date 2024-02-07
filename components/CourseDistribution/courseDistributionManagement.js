@@ -43,12 +43,12 @@ app.post('/', async (req, res) => {
 
         // Save the current routine to the CourseDistributionManagement model
         const courseDistribution = new CourseDistributionManagement({ routine: currentCourseDistributionData });
-        await courseDistribution.save();
+        const data = await courseDistribution.save();
 
-        res.json({ success: true, error: 'Routine published successfully.' });
+        res.json({ success: true, data });
     } catch (error) {
         console.error('Error publishing routine:', error);
-        res.status(500).json({ success: false, message: 'Internal Server Error' });
+        res.json({ success: false, error: 'Internal Server Error' });
     }
 });
 
@@ -62,13 +62,13 @@ app.get('/:year/:semester', async (req, res) => {
         const routine = await CourseDistributionManagement.findOne({ yearSemester: routineId });
 
         if (!routine) {
-            return res.status(404).json({ error: 'Routine not found' });
+            return res.json({ success: false, error: 'Routine not found' });
         }
 
-        res.json(routine);
+        res.json({ success: true, data: routine });
     } catch (error) {
         console.error('Error retrieving routine by ID:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        res.json({ success: false, error: 'Internal Server Error' });
     }
 });
 
@@ -81,16 +81,16 @@ app.get('/:arrayIndex', async (req, res) => {
         const routine = await CourseDistributionManagement.findOne({}, { overall: { $slice: [arrayIndex, 1] } });
 
         if (!routine) {
-            return res.status(404).json({ error: 'Routine not found' });
+            return res.json({ success: false, error: 'Routine not found' });
         }
 
         // Extract the desired array element
         const arrayElement = routine.overall[0]; // $slice returns an array, so we pick the first element
 
-        res.json({ arrayElement });
+        res.json({ success: true, data: arrayElement });
     } catch (error) {
         console.error('Error retrieving routine by index:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        res.json({ success: false, error: 'Internal Server Error' });
     }
 });
 

@@ -211,11 +211,11 @@ app.post('/', async (req, res) => {
 
         // const data = updateDatabaseRoutine(routineMatrix, yearTerm, teachersName, year, semester, classStartDate);
         const data = await createRoutineDatabase(routineMatrix, yearTerm, teachersName, year, semester, classStartDate, routineDetails);
-        console.log(data);
-        res.json(data);
+        // console.log(data);
+        res.json({ success: true, data });
     } catch (error) {
         console.error("An error occurred into the generate random routine:", error);
-        res.status(500).send("Internal Server Error");
+        res.send({ success: false, error: "Internal Server Error! Try again." });
     }
 });
 
@@ -369,14 +369,16 @@ const buildRoutineMatrix = (routineMatrix, roomTimeSlots, coursesDetails, allRoo
             isTeacherAllocated[day][timeSlot].add(teacherCode);
             routineMatrix[day][year][term][timeSlot] = {
                 isAllocated: true,
-                ...courseDetails,
+                courseCode: courseDetails.course.code,
+                teacherCode: teacherCode,
                 room: allRoom[roomInd]
             }
 
             if(credit === 1) {
                 routineMatrix[day][year][term][timeSlot + 1] = {
                     isAllocated: true,
-                    ...courseDetails,
+                    courseCode: courseDetails.course.code,
+                    teacherCode: teacherCode,
                     room: allRoom[roomInd]
                 }
             }

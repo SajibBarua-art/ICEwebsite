@@ -8,7 +8,7 @@ require('dotenv').config();
 app.use(express.json());
 app.use(cors());
 app.get("/", (req, resp) => {
-    resp.send("App is Working");
+    res.send("App is Working");
 });
 
 // Connect to the database

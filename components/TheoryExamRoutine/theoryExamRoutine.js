@@ -64,10 +64,10 @@ app.post('/', async (req, res) => {
 
         const respRoutine = await newTheoryExamRoutine.save();
 
-        res.json(respRoutine);
+        res.json({ success: true, data: respRoutine });
     } catch (error) {
         console.error('Error saving exam routine:', error);
-        res.status(500).json({ success: false, message: 'Internal Server Error' });
+        res.json({ success: false, error: 'Internal Server Error' });
     }
 });
 
@@ -81,10 +81,10 @@ app.get('/', async (req, res) => {
         const result = await TheoryExamRoutine.findOne({ yearSemester: yearSemester });
 
         // Sending the result as JSON response
-        res.json(result);
+        res.json({ success: true, data: result });
     } catch (error) {
         console.error('Error retrieving theory exam routine:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        res.json({ success: false, error: 'Internal Server Error' });
     }
 })
 
@@ -96,17 +96,17 @@ app.put('/update', async (req, res) => {
         const existingData = await TheoryExamRoutine.findOne({ yearSemester: yearSemester });
 
         if (!existingData) {
-            return res.status(404).json({ error: 'Data not found for the given year and semester.' });
+            return res.json({ success: false, error: 'Data not found for the given year and semester.' });
         }
 
         existingData.theoryExamRoutine = newTheoryExamRoutine;
 
         const updatedData = await existingData.save();
 
-        res.json(updatedData);
+        res.json({ success: true, data: updatedData });
     } catch (error) {
         console.error("Error retrieving theory exam routine", error);
-        res.status(500).json({ error: 'Internal Serval Error' })
+        res.json({ success: false, error: 'Internal Serval Error' })
     }
 })
 

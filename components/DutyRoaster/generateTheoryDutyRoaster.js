@@ -251,10 +251,10 @@ app.post('/', async (req, res) => {
 
         createDutyRoaster(theoryDutyRoaster.examYear, theoryDutyRoaster.semester, yearTermWiseDutyRoaster);
         // updateDutyRoaster(yearTermWiseDutyRoaster);
-        res.json(yearTermWiseDutyRoaster);
+        res.json({ success: true, data: yearTermWiseDutyRoaster });
     } catch (error) {
         console.error("An error occurred into the generate random examComittee:", error);
-        res.status(500).send("Internal Server Error");
+        res.send({ success: false, error: "Internal Server Error" });
     }
 });
 

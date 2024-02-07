@@ -45,11 +45,11 @@ app.get('/', async (req, res) => {
         const result = await CourseDistribution.findOne({ yearSemester: yearSemester });
 
         // Sending the result as JSON response
-        res.json(result);
+        res.json( { success: true, data: result });
     } catch (error) {
         console.error('Error retrieving data:', error);
         // Sending an error response
-        res.status(500).json({ error: 'Internal Server Error', error });
+        res.json({ success: false, error: 'Internal Server Error' });
     }
 });
 
@@ -67,17 +67,13 @@ app.post('/', async (req, res) => {
         const result = await newCourseDistribution.save();
 
         // Sending the saved data as JSON response
-        res.json(result);
+        res.json({ success: true, data: result });
     } catch (error) {
-        console.error('Error creating course distribution:', error);
-
-        console.log(error.code);
-
         if (error.code === 11000) {
-            res.status(500).json({ error: 'The specific exam year and semester are already stored in database!'});
+            res.json({ success: false, error: 'The specific exam year and semester are already stored in database!'});
         }
         else {
-            res.status(500).json({ error: 'Internal Server Error2' });
+            res.json({ success: false, error: 'Internal Server Error' });
         }
     }
 });
@@ -92,7 +88,7 @@ app.put('/update', async (req, res) => {
         const existingData = await CourseDistribution.findOne({ yearSemester: yearSemester });
 
         if (!existingData) {
-            return res.status(404).json({ error: 'Data not found for the given year and semester.' });
+            return res.json({ success: false, error: 'Data not found for the given year and semester.' });
         }
 
         // Update the courseDetails field with newCourseDetails
@@ -101,10 +97,10 @@ app.put('/update', async (req, res) => {
         // Save the updated document
         const updatedData = await existingData.save();
 
-        res.json(updatedData);
+        res.json({ success: true, data: updatedData });
     } catch (error) {
         console.error('Error updating course distribution:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        res.json({ success: false, error: 'Internal Server Error' });
     }
 });
 

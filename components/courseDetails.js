@@ -41,14 +41,14 @@ app.post("/", async (req, resp) => {
         let result = await courseDetails.save();
         result = result.toObject();
         if (result) {
-            resp.send(req.body);
-            console.log(result);
+            res.send( { success: true, data: result });
         } else {
+            res.send({ success: false, error: 'Your provided course code is already registered!' });
             console.log("This course details already registered");
         }
 
     } catch (e) {
-        resp.status(400).send("!!! Error in courseDetails register panel !!!\n" + e);
+        res.send({ success: false, error: "Internal Server Error!" });
     }
 });
 
@@ -56,10 +56,10 @@ app.get("/", async (req, resp) => {
     try {
         // Retrieve all CourseDetails from the MongoDB database
         const users = await CourseDetails.find({});
-        resp.json(users); // Send the users as a JSON response
+        res.json({ success: true, data: users }); // Send the users as a JSON response
     } catch (error) {
         console.error("An error occurred in CourseDetails get function:", error);
-        resp.status(500).send("Internal Server Error");
+        res.send({ success: false, error: "Internal Server Error" });
     }
 });
 

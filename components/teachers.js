@@ -60,32 +60,32 @@ const teacherSchema = new mongoose.Schema({
 });
 const Teacher = mongoose.model('teachers', teacherSchema);
  
-app.post("/", async (req, resp) => {
+app.post("/", async (req, res) => {
     try {
         const teacher = new Teacher(req.body);
         let result = await teacher.save();
         result = result.toObject();
         if (result) {
             delete result.password;
-            resp.send(req.body);
+            res.send({ success: true, data: result });
             console.log(result);
         } else {
             console.log("teacher already registered");
         }
  
     } catch (e) {
-        resp.status(400).send("!!! Error in teacher register panel !!!\n" + e);
+        res.send({ success: false, error: "Error in teacher register panel" });
     }
 });
 
-app.get("/", async (req, resp) => {
+app.get("/", async (req, res) => {
     try {
         // Retrieve all teachers from the MongoDB database
         const users = await Teacher.find({});
-        resp.json(users); // Send the users as a JSON response
+        res.json({ success: true, data: users }); // Send the users as a JSON response
     } catch (error) {
         console.error("An error occurred in teachers get function:", error);
-        resp.status(500).send("Internal Server Error");
+        res.send({ success: false, error: "Internal Server Error" });
     }
 });
 
@@ -96,13 +96,13 @@ app.get('/by-email/:email', async (req, res) => {
       const teacher = await Teacher.findOne({ email });
   
       if (!teacher) {
-        return res.status(404).json({ error: 'Teacher not found' });
+        return res.json({ success: false, error: 'Your provided email address has no teacher profile!' });
       }
   
-      res.json(teacher);
+      res.json({ success: true, data: teacher });
     } catch (error) {
       console.error('Error fetching teacher details:', error);
-      res.status(500).json({ error: 'Internal Server Error' });
+      res.json({ success: false, error: 'Internal Server Error! Try again.' });
     }
 });
 
@@ -119,18 +119,18 @@ app.put('/updateTeacher', async (req, res) => {
       );
   
       if (!updatedTeacher) {
-        return res.status(404).json({ message: 'Teacher not found' });
+        return res.json({ success: false, error: 'Your provided email address has no teacher profile!' });
       }
   
-      res.json(updatedTeacher);
+      res.json({ success: true, data: updatedTeacher });
     } catch (error) {
       console.error('Error updating teacher:', error);
-      res.status(500).json({ message: 'Internal Server Error' });
+      res.json({ success: false, error: 'Internal Server Error' });
     }
 });
 
 // to update courses of a teacher
-app.put("/:teacherCode/courses", async (req, resp) => {
+app.put("/:teacherCode/courses", async (req, res) => {
     try {
         const teacherCode = req.params.teacherCode;
         const coursesToUpdate = req.body.courses; // Assuming you send an array of courses in the request body
@@ -139,7 +139,7 @@ app.put("/:teacherCode/courses", async (req, resp) => {
         const teacher = await Teacher.findOne({ teacherCode });
 
         if (!teacher) {
-            return resp.status(404).send("Teacher not found");
+            return res.send({ success: false, error: "Your provided teacher code is not registered yet! " });
         }
 
         // Update the courses field
@@ -148,10 +148,10 @@ app.put("/:teacherCode/courses", async (req, resp) => {
         // Save the updated teacher
         const updatedTeacher = await teacher.save();
 
-        resp.json(updatedTeacher);
+        res.json({ success: true, data: updatedTeacher });
     } catch (error) {
         console.error("An error occurred in updating teacher courses:", error);
-        resp.status(500).send("Internal Server Error");
+        res.send({ success: false, error: "Internal Server Error" });
     }
 });
 

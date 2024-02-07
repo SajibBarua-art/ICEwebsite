@@ -211,7 +211,7 @@ const generateExamCommittee = () => {
 
     // createRoutineDatabase(yearTermWiseLabExamCommittee);
     // updateDatabaseExamCommittee(yearTermWiseLabExamCommittee);
-    // res.json(yearTermWiseLabExamCommittee);
+    // res.json({ success: true, data: yearTermWiseLabExamCommittee });
 
 };
 

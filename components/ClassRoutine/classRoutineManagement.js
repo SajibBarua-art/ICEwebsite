@@ -55,10 +55,10 @@ app.post('/', async (req, res) => {
         const routineManagement = new RoutineManagement({ routine: currentRoutineData });
         await routineManagement.save();
 
-        res.json({ success: true, routineManagement });
+        res.json({ success: true, data: routineManagement });
     } catch (error) {
         console.error('Error publishing routine:', error);
-        res.status(500).json({ success: false, message: 'Internal Server Error' });
+        res.json({ success: false, message: 'Internal Server Error' });
     }
 });
 
@@ -72,13 +72,13 @@ app.get('/:year/:semester', async (req, res) => {
         const routine = await RoutineManagement.findOne({ yearSemester: routineId });
 
         if (!routine) {
-            return res.status(404).json({ error: 'Routine not found' });
+            return res.json({ success: false, error: 'Not Found! Check your provided year and semester.' });
         }
 
-        res.json(routine);
+        res.json({ success: true, data: routine });
     } catch (error) {
         console.error('Error retrieving routine by ID:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        res.json({ success: false, error: 'Internal Server Error' });
     }
 });
 
@@ -91,16 +91,16 @@ app.get('/:arrayIndex', async (req, res) => {
         const routine = await RoutineManagement.findOne({}, { overall: { $slice: [arrayIndex, 1] } });
 
         if (!routine) {
-            return res.status(404).json({ error: 'Routine not found' });
+            return res.json({ success: false, error: 'Routine not found!' });
         }
 
         // Extract the desired array element
         const arrayElement = routine.overall[0]; // $slice returns an array, so we pick the first element
 
-        res.json({ arrayElement });
+        res.json({ success: true, data: arrayElement });
     } catch (error) {
         console.error('Error retrieving routine by index:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        res.json({ success: false, error: 'Internal Server Error' });
     }
 });
 

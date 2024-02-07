@@ -30,10 +30,10 @@ const createRoom = async () => {
 app.get("/", async (req, resp) => {
     try {
         const room = await Room.find({});
-        resp.json(room); // Send the users as a JSON response
+        res.json({ success: true, data: room }); // Send the users as a JSON response
     } catch (error) {
         console.error("An error occurred in room get function:", error);
-        resp.status(500).send("Internal Server Error");
+        res.send({ success: false, data: "Internal Server Error" });
     }
 });
 

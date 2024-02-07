@@ -12,13 +12,13 @@ app.put('/updateAdminStatus', async (req, res) => {
     const teacher = await Teacher.findOneAndUpdate({ email }, { isAdmin }, { new: true });
 
     if (!teacher) {
-      return res.status(404).json({ message: 'Teacher not found' });
+      return res.json({ success: false, error: 'Teacher not found' });
     }
 
-    return res.json({ message: 'Admin status updated successfully', teacher });
+    return res.json({ success: true, data: teacher });
   } catch (error) {
     console.error('Error updating admin status:', error);
-    return res.status(500).json({ message: 'Internal Server Error' });
+    return res.json({ success: false, error: 'Internal Server Error' });
   }
 });
 
@@ -30,13 +30,13 @@ app.put('/updateExamCommitteeStatus', async (req, res) => {
       const teacher = await Teacher.findOneAndUpdate({ email }, { isInExamCommittee }, { new: true });
   
       if (!teacher) {
-        return res.status(404).json({ message: 'Teacher not found' });
+        return res.json({ success: false, error: 'Teacher not found' });
       }
   
-      return res.json({ message: 'Exam Committee Status status updated successfully', teacher });
+      return res.json({ success: true, data: teacher });
     } catch (error) {
       console.error('Error updating exam committee status:', error);
-      return res.status(500).json({ message: 'Internal Server Error' });
+      return res.json({ success: false, error: 'Internal Server Error' });
     }
 });
 
@@ -48,13 +48,13 @@ app.put('/updateRoutineCommitteeStatus', async (req, res) => {
       const teacher = await Teacher.findOneAndUpdate({ email }, { isInRoutineCommittee }, { new: true });
   
       if (!teacher) {
-        return res.status(404).json({ message: 'Teacher not found' });
+        return res.json({ success: false, error: 'Teacher not found' });
       }
   
-      return res.json({ message: 'Routine Committee Status status updated successfully', teacher });
+      return res.json({ success: true, data: teacher });
     } catch (error) {
       console.error('Error updating Routine committee status:', error);
-      return res.status(500).json({ message: 'Internal Server Error' });
+      return res.json({ success: false, error: 'Internal Server Error' });
     }
 });
 

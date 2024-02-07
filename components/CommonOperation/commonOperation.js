@@ -6,13 +6,13 @@ const getDataById = (model) => async (req, res) => {
         const result = await model.findById(id);
 
         if (result) {
-            res.json(result);
+            res.json({ success: true, result });
         } else {
-            res.status(404).json({ error: 'Data not found' });
+            res.json({ success: false, error: 'Data not found!' });
         }
     } catch (error) {
         console.error("An error occurred while retrieving data:", error);
-        res.status(500).send("Internal Server Error");
+        res.send({ success: false, error: "Internal Server Error" });
     }
 };
 
@@ -25,13 +25,13 @@ const deleteDataById = (model) => async (req, res) => {
         const deletedObject = await model.findOneAndDelete({ yearSemester });
 
         if (!deletedObject) {
-            return res.status(404).json({ error: 'Object not found' });
+            return res.json({ success: false, error: 'Not found! Check provided year and Semester.' });
         }
 
-        return res.status(200).json({ error: 'Object deleted successfully', deletedObject });
+        return res.json({ success: true });
     } catch (error) {
         console.error('Error deleting object:', error);
-        return res.status(500).json({ error: 'Internal server error' });
+        return res.json({ success: false, error: 'Internal server error' });
     }
 };
 

@@ -23,7 +23,7 @@ app.get('/', async (req, res) => {
         const feedbackData = await Feedback.find();
         res.json(feedbackData);
     } catch (error) {
-        res.status(500).json({ error: 'Internal Server Error' });
+        res.json({ error: 'Internal Server Error' });
     }
 });
 
@@ -41,9 +41,9 @@ app.post('/', async (req, res) => {
         });
 
         const savedFeedback = await newFeedback.save();
-        res.status(201).json(savedFeedback);
+        res.json(savedFeedback);
     } catch (error) {
-        res.status(500).json({ error: 'Internal Server Error' });
+        res.json({ error: 'Internal Server Error' });
     }
 });
 

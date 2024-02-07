@@ -46,7 +46,7 @@ app.post("/", async (req, res) => {
 
     if (existingStudent) {
       // If a student with the same email already exists, return a conflict response (HTTP 409).
-      return res.status(409).json({ error: "Student already registered with this email" });
+      return res.json({ error: "Student already registered with this email" });
     }
 
     // Create a new student using the data from the request body
@@ -59,10 +59,10 @@ app.post("/", async (req, res) => {
     const savedStudent = newStudent.toObject();
     delete savedStudent.password; // Remove sensitive data from the response
 
-    res.status(201).json(savedStudent);
+    res.json(savedStudent);
   } catch (error) {
     console.error("Error in student registration:", error);
-    res.status(500).json({ error: "An error occurred while registering the student" });
+    res.json({ error: "An error occurred while registering the student" });
   }
 });
 
@@ -71,10 +71,10 @@ app.get("/", async (req, resp) => {
     try {
         // Retrieve all students from the MongoDB database
         const users = await Student.find({});
-        resp.json(users); // Send the users as a JSON response
+        res.json({ success: true, data: users }); // Send the users as a JSON response
     } catch (error) {
         console.error("An error occurred in students get function:", error);
-        resp.status(500).send("Internal Server Error");
+        res.send({ success: false, error: "Internal Server Error" });
     }
 });
 

@@ -338,10 +338,10 @@ app.get('/', async (req, res) => {
 
         // createRoutineDatabase(yearTermWiseExamCommittee);
         updateDatabaseExamCommittee(yearTermWiseExamCommittee, teacherWithCourses);
-        res.json(yearTermWiseExamCommittee);
+        res.json({ success: true, data: yearTermWiseExamCommittee });
     } catch (error) {
         console.error("An error occurred into the generate random examComittee:", error);
-        res.status(500).send("Internal Server Error");
+        res.send({ success: false, error: "Internal Server Error" });
     }
 });
 
