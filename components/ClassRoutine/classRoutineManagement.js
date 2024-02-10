@@ -1,7 +1,6 @@
 const express = require('express');
 const app = express.Router();
 const mongoose = require('mongoose');
-const Routine = mongoose.model('routine');
 
 const routineManagementSchema = new mongoose.Schema({
     overall: {
@@ -40,68 +39,21 @@ const routineManagementSchema = new mongoose.Schema({
 });
 
 const RoutineManagement = mongoose.model('RoutineManagement', routineManagementSchema);
+const { postDataByYearSemester, getDataByYearSemester, updateDataByYearSemester, deleteDataByYearSemester, getDataByArrayIndex } = require('../CommonOperation/commonManagement');
 
 // to store routine data permanently
-app.post('/', async (req, res) => {
-    try {
-        // Retrieve the current routine data from the request body
-        const currentRoutineData = req.body;
+app.post('/', postDataByYearSemester(RoutineManagement));
 
-        // Save the current routine to the Routine model
-        const currentRoutine = new Routine(currentRoutineData);
-        await currentRoutine.save();
+// Route to get routine by year and semester
+app.get('/data/:year/:semester', getDataByYearSemester(RoutineManagement));
 
-        // Save the current routine to the RoutineManagement model
-        const routineManagement = new RoutineManagement({ routine: currentRoutineData });
-        await routineManagement.save();
+// Route to delete routine by year and semester
+app.delete('/delete/:year/:semester', deleteDataByYearSemester(RoutineManagement));
 
-        res.json({ success: true, data: routineManagement });
-    } catch (error) {
-        console.error('Error publishing routine:', error);
-        res.json({ success: false, message: 'Internal Server Error' });
-    }
-});
-
-// Route to get routine by ID
-app.get('/:year/:semester', async (req, res) => {
-    try {
-        const year = req.params.year, semester = req.params.semester;
-        const routineId = year + semester;
-
-        // Find the routine by yearSemester
-        const routine = await RoutineManagement.findOne({ yearSemester: routineId });
-
-        if (!routine) {
-            return res.json({ success: false, error: 'Not Found! Check your provided year and semester.' });
-        }
-
-        res.json({ success: true, data: routine });
-    } catch (error) {
-        console.error('Error retrieving routine by ID:', error);
-        res.json({ success: false, error: 'Internal Server Error' });
-    }
-});
+// Route to update routine by year and semester
+app.put('/update/:year/:semester', updateDataByYearSemester(RoutineManagement));
 
 // Route to get routine data by array index
-app.get('/:arrayIndex', async (req, res) => {
-    try {
-        const arrayIndex = parseInt(req.params.arrayIndex, 10);
-
-        // Find the routine and project only the specified array element by index
-        const routine = await RoutineManagement.findOne({}, { overall: { $slice: [arrayIndex, 1] } });
-
-        if (!routine) {
-            return res.json({ success: false, error: 'Routine not found!' });
-        }
-
-        // Extract the desired array element
-        const arrayElement = routine.overall[0]; // $slice returns an array, so we pick the first element
-
-        res.json({ success: true, data: arrayElement });
-    } catch (error) {
-        console.error('Error retrieving routine by index:', error);
-        res.json({ success: false, error: 'Internal Server Error' });
-    }
-});
+app.get('/byIndex/:arrayIndex', getDataByArrayIndex(RoutineManagement));
 
 module.exports = app;

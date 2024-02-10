@@ -1,43 +1,44 @@
 const express = require('express');
 const app = express.Router();
 const mongoose = require('mongoose');
+const { getDataById, deleteDataById, updateDataById } = require('../CommonOperation/commonOperation');
 const TheoryDutyRoaster = mongoose.model('theorydutyroaster');
 
 // Route to get data by MongoDB ObjectID
-app.get('/data/:id', async (req, res) => {
-    const id = req.params.id;
+app.get('/data/:_id', getDataById(TheoryDutyRoaster));
+
+// Route to delete object by id
+app.delete('/deleteObject/:_id', deleteDataById(TheoryDutyRoaster));
+
+// Route to update the whole theoryDutyRoaster by id
+app.put('/update/:_id', updateDataById(TheoryDutyRoaster));
+
+// To update a theoryDutyRoaster cell allocation manually by id
+app.put('/cell/update/:_id', async (req, res) => {
+    const _id = req.params._id;
+    const { day, year, term, timeslot, roomNo, courseCode, teacherCode } = req.body;
 
     try {
-        const result = await TheoryDutyRoaster.findById(id);
+        // Find the document based on the query
+        let theoryDutyRoaster = await TheoryDutyRoaster.findById(_id);
 
-        if (result) {
-            res.json({ success: true, data: result });
+        // Update the theoryDutyRoaster array
+        if (theoryDutyRoaster) {
+            theoryDutyRoaster[day][year][term][timeslot] = {
+                isAllocated: true,
+                courseCode: courseCode,
+                teacherCode: teacherCode,
+                room: roomNo
+            };
+
+            await theoryDutyRoaster.save();
+
+            res.json({ success: true, data: theoryDutyRoaster });
         } else {
-            res.json({ success: false, error: 'Data not found' });
+            res.json({ success: false, error: 'Something went wrong! Try again.' });
         }
-    } catch (error) {
-        console.error("An error occurred while retrieving data:", error);
-        res.send({ success: false, error: "Internal Server Error" });
-    }
-});
-
-// Route to delete object by examYear and semester
-app.delete('/deleteObject/:year/:semester', async (req, res) => {
-    const { year, semester } = req.params;
-    const yearSemester = year.toString() + semester.toString();
-
-    try {
-        // Find and delete the object
-        const deletedObject = await YourModel.findOneAndDelete({ yearSemester });
-
-        if (!deletedObject) {
-            return res.json({ success: false, error: 'Object not found' });
-        }
-
-        return res.json({ success: true });
-    } catch (error) {
-        console.error('Error deleting object:', error);
-        return res.json({ success: false, error: 'Internal server error' });
+    } catch (err) {
+        res.json({ success: false, error: 'Internal Server Error' });
     }
 });
 
