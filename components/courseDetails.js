@@ -35,7 +35,7 @@ const courseDetailsSchema = new mongoose.Schema({
 });
 const CourseDetails = mongoose.model('courseDetails', courseDetailsSchema);
 
-app.post("/", async (req, resp) => {
+app.post("/", async (req, res) => {
     try {
         const courseDetails = new CourseDetails(req.body);
         let result = await courseDetails.save();
@@ -52,7 +52,7 @@ app.post("/", async (req, resp) => {
     }
 });
 
-app.get("/", async (req, resp) => {
+app.get("/", async (req, res) => {
     try {
         // Retrieve all CourseDetails from the MongoDB database
         const users = await CourseDetails.find({});

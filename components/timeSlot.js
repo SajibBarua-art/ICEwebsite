@@ -52,7 +52,7 @@ const createTimeSlot = async () => {
 //createTimeSlot();
 
 // get time-slot
-app.get("/", async (req, resp) => {
+app.get("/", async (req, res) => {
     try {
         const timeSlot = await TimeSlot.find({});
         res.json({ success: true, data: timeSlot }); // Send the users as a JSON response

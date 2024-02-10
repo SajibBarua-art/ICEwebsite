@@ -67,7 +67,7 @@ app.post("/", async (req, res) => {
 });
 
 
-app.get("/", async (req, resp) => {
+app.get("/", async (req, res) => {
     try {
         // Retrieve all students from the MongoDB database
         const users = await Student.find({});

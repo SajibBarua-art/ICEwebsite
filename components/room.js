@@ -27,7 +27,7 @@ const createRoom = async () => {
 // createRoom();
 
 // get room
-app.get("/", async (req, resp) => {
+app.get("/", async (req, res) => {
     try {
         const room = await Room.find({});
         res.json({ success: true, data: room }); // Send the users as a JSON response
