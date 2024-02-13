@@ -70,6 +70,7 @@ app.post("/", async (req, res) => {
             res.send({ success: true, data: result });
             console.log(result);
         } else {
+            res.send({ success: false, error: 'This gmail account is already registered!' });
             console.log("teacher already registered");
         }
  

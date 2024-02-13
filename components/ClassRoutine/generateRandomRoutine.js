@@ -347,6 +347,10 @@ const buildRoutineMatrix = (routineMatrix, roomTimeSlots, coursesDetails, allRoo
         const term = courseDetails.course.term;
         const credit = courseDetails.course.credit;
         const teacherCode = courseDetails.teacher.teacherCode;
+        let teacher2Code = '';
+        if(courseDetails.hasOwnProperty('teacher2')) {
+            teacher2Code = courseDetails.teacher2.teacherCode;
+        }
 
         for(let j = 0; j < credit; j++) {
             var curSlotIndex = slotIndex;
@@ -354,10 +358,13 @@ const buildRoutineMatrix = (routineMatrix, roomTimeSlots, coursesDetails, allRoo
             var timeSlot = roomTimeSlots[curSlotIndex].timeSlotInd;
             var roomInd = roomTimeSlots[slotIndex].roomInd;
 
-            while(routineMatrix[day][year][term][timeSlot].isAllocated || isRoomTaken[day][timeSlot][roomInd] || isTeacherAllocated[day][timeSlot].has(teacherCode)) {
+            while(routineMatrix[day][year][term][timeSlot].isAllocated || 
+            isRoomTaken[day][timeSlot][roomInd] || 
+            isTeacherAllocated[day][timeSlot].has(teacherCode) || 
+            (teacher2Code !== '' && isTeacherAllocated[day][timeSlot].has(teacher2Code))) {
                 curSlotIndex++;
                 if(curSlotIndex === roomTimeSlots.length) {
-                    console.log('error', );
+                    console.log('Not enough room slots!', );
                     process.exit();
                 }
                 day = roomTimeSlots[curSlotIndex].dayInd;
@@ -367,18 +374,20 @@ const buildRoutineMatrix = (routineMatrix, roomTimeSlots, coursesDetails, allRoo
 
             isRoomTaken[day][timeSlot][roomInd] = true;
             isTeacherAllocated[day][timeSlot].add(teacherCode);
+            if(teacher2Code !== '') {
+                isTeacherAllocated[day][timeSlot].add(teacher2Code);
+                teacherCode = teacherCode + ', ' + teacher2Code;
+            }
             routineMatrix[day][year][term][timeSlot] = {
                 isAllocated: true,
-                courseCode: courseDetails.course.code,
-                teacherCode: teacherCode,
+                ...courseDetails,
                 room: allRoom[roomInd]
             }
 
             if(credit === 1) {
                 routineMatrix[day][year][term][timeSlot + 1] = {
                     isAllocated: true,
-                    courseCode: courseDetails.course.code,
-                    teacherCode: teacherCode,
+                    ...courseDetails,
                     room: allRoom[roomInd]
                 }
             }
