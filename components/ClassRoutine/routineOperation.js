@@ -2,16 +2,16 @@ const express = require('express');
 const app = express.Router();
 const mongoose = require('mongoose');
 const Routine = mongoose.model('routine');
-const { getDataById, deleteDataById, updateDataById } = require('../CommonOperation/commonOperation');
+const { getDataByIdAndModel, deleteDataByIdAndModel, updateDataByIdAndModel } = require('../CommonOperation/commonOperation');
 
 // Route to get data by MongoDB ObjectID
-app.get('/data/:_id', getDataById(Routine));
+app.get('/data/:id/:serviceName', getDataByIdAndModel());
 
 // Route to delete object by id
-app.delete('/deleteObject/:_id', deleteDataById(Routine));
+app.delete('/deleteObject/:id/:serviceName', deleteDataByIdAndModel());
 
 // Route to update the whole routine by id
-app.put('/update/:_id', updateDataById(Routine));
+app.put('/update/:id/:serviceName', updateDataByIdAndModel());
 
 // To update a routine cell allocation manually by id
 app.put('/cell/update/:_id', async (req, res) => {

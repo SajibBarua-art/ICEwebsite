@@ -1,12 +1,14 @@
-// Create a reusable function to handle GET requests for different Mongoose models
-const getDataById = (model) => async (req, res) => {
-    const _id = req.params.id;
+const mongoose = require('mongoose');
+
+const getDataByIdAndModel = () => async (req, res) => {
+    const _id = req.params.id, serviceName = req.params.serviceName;
+    const Model = mongoose.model(serviceName);
 
     try {
-        const result = await model.findById( _id );
+        const result = await Model.findById( _id );
 
         if (result) {
-            res.json({ success: true, result });
+            res.json({ success: true, data: result });
         } else {
             res.json({ success: false, error: 'Data not found!' });
         }
@@ -16,15 +18,16 @@ const getDataById = (model) => async (req, res) => {
     }
 };
 
-const updateDataById = (model) => async (req, res) => {
-    const _id = req.params.id;
+const updateDataByIdAndModel = () => async (req, res) => {
+    const _id = req.params.id, serviceName = req.params.serviceName;
     const newData = req.body;
+    const Model = mongoose.model(serviceName);
 
     try {
-        const result = await model.findByIdAndUpdate(_id, newData, { new: true });
+        const result = await Model.findByIdAndUpdate(_id, newData, { new: true });
 
         if (result) {
-            res.json({ success: true, result });
+            res.json({ success: true, data: result });
         } else {
             res.json({ success: false, error: 'Data not found!' });
         }
@@ -34,12 +37,13 @@ const updateDataById = (model) => async (req, res) => {
     }
 };
 
-const deleteDataById = (model) => async (req, res) => {
-    const _id = req.params.id;
+const deleteDataByIdAndModel = () => async (req, res) => {
+    const id = req.params.id, serviceName = req.params.serviceName;
+    const Model = mongoose.model(serviceName);
 
     try {
         // Find and delete the object
-        const deletedObject = await model.findOneAndDelete({ _id });
+        const deletedObject = await Model.findOneAndDelete({ id });
 
         if (!deletedObject) {
             return res.json({ success: false, error: 'Not found! Check provided year and Semester.' });
@@ -54,7 +58,7 @@ const deleteDataById = (model) => async (req, res) => {
 
 // Export the middleware function for use in other routes
 module.exports = {
-    getDataById,
-    updateDataById,
-    deleteDataById
+    getDataByIdAndModel,
+    updateDataByIdAndModel,
+    deleteDataByIdAndModel
 };

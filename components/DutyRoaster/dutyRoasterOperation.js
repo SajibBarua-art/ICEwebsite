@@ -1,17 +1,17 @@
 const express = require('express');
 const app = express.Router();
 const mongoose = require('mongoose');
-const { getDataById, deleteDataById, updateDataById } = require('../CommonOperation/commonOperation');
+const { getDataByIdAndModel, deleteDataByIdAndModel, updateDataByIdAndModel } = require('../CommonOperation/commonOperation');
 const TheoryDutyRoaster = mongoose.model('theorydutyroaster');
 
 // Route to get data by MongoDB ObjectID
-app.get('/data/:_id', getDataById(TheoryDutyRoaster));
+app.get('/data/:id/:serviceName', getDataByIdAndModel());
 
 // Route to delete object by id
-app.delete('/deleteObject/:_id', deleteDataById(TheoryDutyRoaster));
+app.delete('/deleteObject/:id/:serviceName', deleteDataByIdAndModel());
 
 // Route to update the whole theoryDutyRoaster by id
-app.put('/update/:_id', updateDataById(TheoryDutyRoaster));
+app.put('/update/:_id/:serviceName', updateDataByIdAndModel());
 
 // To update a theoryDutyRoaster cell allocation manually by id
 app.put('/cell/update/:_id', async (req, res) => {

@@ -27,33 +27,28 @@ const routineManagementSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     },
-    yearSemester: { // yearSemester = year + semester
-        type: String,
-        unique: true,
-        required: true
-    },
     createdAt: {
         type: Date,
         default: Date.now,
     },
 });
 
-const RoutineManagement = mongoose.model('RoutineManagement', routineManagementSchema);
-const { postDataByYearSemester, getDataByYearSemester, updateDataByYearSemester, deleteDataByYearSemester, getDataByArrayIndex } = require('../CommonOperation/commonManagement');
+mongoose.model('RoutineManagement', routineManagementSchema);
+const { postData, getDataByYearSemester, updateDataByYearSemester, deleteDataByYearSemester, getDataByArrayIndex } = require('../CommonOperation/commonManagement');
 
 // to store routine data permanently
-app.post('/', postDataByYearSemester(RoutineManagement));
+app.post('/', postData('RoutineManagement'));
 
 // Route to get routine by year and semester
-app.get('/data/:year/:semester', getDataByYearSemester(RoutineManagement));
+app.get('/data/:year/:semester', getDataByYearSemester('RoutineManagement'));
 
 // Route to delete routine by year and semester
-app.delete('/delete/:year/:semester', deleteDataByYearSemester(RoutineManagement));
+app.delete('/delete/:year/:semester', deleteDataByYearSemester('RoutineManagement'));
 
 // Route to update routine by year and semester
-app.put('/update/:year/:semester', updateDataByYearSemester(RoutineManagement));
+app.put('/update/:year/:semester', updateDataByYearSemester('RoutineManagement'));
 
 // Route to get routine data by array index
-app.get('/byIndex/:arrayIndex', getDataByArrayIndex(RoutineManagement));
+app.get('/byIndex/:arrayIndex', getDataByArrayIndex('RoutineManagement'));
 
 module.exports = app;

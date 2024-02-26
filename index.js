@@ -43,6 +43,7 @@ const courseDistribution = require('./components/CourseDistribution/courseDistri
 const classRoutineManagement = require('./components/ClassRoutine/classRoutineManagement');
 const theoryExamRoutine = require('./components/TheoryExamRoutine/theoryExamRoutine');
 const theoryDutyRoaster = require('./components/DutyRoaster/generateTheoryDutyRoaster');
+const pendingService = require('./components/PendingOperation/pendingService');
 
 // Use the routes for data management
 app.use('/teachers', teacherRoutes);
@@ -62,6 +63,7 @@ app.use('/courseDistribution', courseDistribution);
 app.use('/classRoutineManagement', classRoutineManagement);
 app.use('/theoryExamRoutine', theoryExamRoutine);
 app.use('/generateTheoryDutyRoaster', theoryDutyRoaster);
+app.use('/pendingService', pendingService);
 
 app.listen(port, () => {
     console.log(`Example app listening at http://localhost:${port}`)

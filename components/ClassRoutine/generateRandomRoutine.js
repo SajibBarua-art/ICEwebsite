@@ -126,9 +126,7 @@ const toGetTeachersName = (teachersInfo) => {
 app.post('/', async (req, res) => {
     try {
         const { year, semester, classStartDate, routineDetails } = req.body;
-
-        console.log(routineDetails);
-
+        
         // Retrieve all teachers info from the MongoDB database
         const teachersInfo = await Teacher.find({}).lean(); // Use .lean() to get plain JavaScript objects
         const coursesInfo = await CourseDetails.find({}).lean();
@@ -210,11 +208,31 @@ app.post('/', async (req, res) => {
         const teachersName = toGetTeachersName(teachersInfo);
 
         // const data = updateDatabaseRoutine(routineMatrix, yearTerm, teachersName, year, semester, classStartDate);
-        const data = await createRoutineDatabase(routineMatrix, yearTerm, teachersName, year, semester, classStartDate, routineDetails);
-        // console.log(data);
+        const data = { 
+            overall: routineMatrix,
+            yearTerm,
+            routineTeachersName: teachersName,
+            year,
+            semester,
+            classStartDate,
+            routineDetails
+        }
         res.json({ success: true, data });
     } catch (error) {
         console.error("An error occurred into the generate random routine:", error);
+        res.send({ success: false, error: "Internal Server Error! Try again." });
+    }
+});
+
+app.post('/data', async(req, res) => {
+    try {
+        const { data } = req.body;
+
+        const result = await createRoutineDatabase(data.overall, data.yearTerm, data.routineTeachersName, data.year, data.semester, data.classStartDate, data.routineDetails);
+        // console.log(data);
+        res.json({ success: true, data: result });
+    } catch (error) {
+        console.error("An error occurred into the save routine:", error);
         res.send({ success: false, error: "Internal Server Error! Try again." });
     }
 });

@@ -41,10 +41,10 @@ const theoryExamCommitteeManagementSchema = new mongoose.Schema({
 });
 
 const TheoryExamCommitteeManagement = mongoose.model('TheoryExamCommitteeManagement', theoryExamCommitteeManagementSchema);
-const { postDataByYearSemester, getDataByYearSemester, updateDataByYearSemester, deleteDataByYearSemester, getDataByArrayIndex } = require('../CommonOperation/commonManagement');
+const { postData, getDataByYearSemester, updateDataByYearSemester, deleteDataByYearSemester, getDataByArrayIndex } = require('../CommonOperation/commonManagement');
 
 // to store dutyRoaster data permanently
-app.post('/', postDataByYearSemester(TheoryExamCommitteeManagement));
+app.post('/', postData(TheoryExamCommitteeManagement));
 
 // Route to get dutyRoaster by year and semester
 app.get('/data/:year/:semester', getDataByYearSemester(TheoryExamCommitteeManagement));
