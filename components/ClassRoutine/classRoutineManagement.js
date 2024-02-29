@@ -3,6 +3,13 @@ const app = express.Router();
 const mongoose = require('mongoose');
 
 const routineManagementSchema = new mongoose.Schema({
+    id: {
+        // To store pending service id
+        // by doing so, we can avoid redundancy of routine management
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        unique: true
+    },
     overall: {
         type: Array,
         required: true
@@ -34,10 +41,10 @@ const routineManagementSchema = new mongoose.Schema({
 });
 
 mongoose.model('RoutineManagement', routineManagementSchema);
-const { postData, getDataByYearSemester, updateDataByYearSemester, deleteDataByYearSemester, getDataByArrayIndex } = require('../CommonOperation/commonManagement');
+const { postData, getDataByYearSemester, updateDataByYearSemester, deleteDataByYearSemester, getDataByArrayIndex, getDataByLastArrayIndex } = require('../CommonOperation/commonManagement');
 
 // to store routine data permanently
-app.post('/', postData('RoutineManagement'));
+app.post('/', postData('RoutineManagement', 'routine'));
 
 // Route to get routine by year and semester
 app.get('/data/:year/:semester', getDataByYearSemester('RoutineManagement'));
@@ -50,5 +57,8 @@ app.put('/update/:year/:semester', updateDataByYearSemester('RoutineManagement')
 
 // Route to get routine data by array index
 app.get('/byIndex/:arrayIndex', getDataByArrayIndex('RoutineManagement'));
+
+// Route to get last element
+app.get('/lastElement', getDataByLastArrayIndex('RoutineManagement'));
 
 module.exports = app;

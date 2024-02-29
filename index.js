@@ -44,6 +44,7 @@ const classRoutineManagement = require('./components/ClassRoutine/classRoutineMa
 const theoryExamRoutine = require('./components/TheoryExamRoutine/theoryExamRoutine');
 const theoryDutyRoaster = require('./components/DutyRoaster/generateTheoryDutyRoaster');
 const pendingService = require('./components/PendingOperation/pendingService');
+const serviceId = require('./components/ServiceId/serviceId');
 
 // Use the routes for data management
 app.use('/teachers', teacherRoutes);
@@ -64,6 +65,7 @@ app.use('/classRoutineManagement', classRoutineManagement);
 app.use('/theoryExamRoutine', theoryExamRoutine);
 app.use('/generateTheoryDutyRoaster', theoryDutyRoaster);
 app.use('/pendingService', pendingService);
+app.use('/serviceId', serviceId);
 
 app.listen(port, () => {
     console.log(`Example app listening at http://localhost:${port}`)
