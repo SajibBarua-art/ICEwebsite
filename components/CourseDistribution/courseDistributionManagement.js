@@ -34,7 +34,7 @@ const CourseDistributionManagement = mongoose.model('CourseDistributionManagemen
 const { postData, getDataByYearSemester, updateDataByYearSemester, deleteDataByYearSemester, getDataByArrayIndex } = require('../CommonOperation/commonManagement');
 
 // to store courseDistribution data permanently
-app.post('/', postData(CourseDistributionManagement));
+app.post('/', postData('CourseDistributionManagement', 'coursedistributions'));
 
 // Route to get courseDistribution by year and semester
 app.get('/data/:year/:semester', getDataByYearSemester(CourseDistributionManagement));

@@ -2,6 +2,7 @@ const express = require('express');
 const app = express.Router();
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+const { getDataByIdAndModel } = require('../CommonOperation/commonOperation');
 
 // Create Mongoose schema and model for course distribution
 const courseDistributionSchema = new mongoose.Schema({
@@ -115,5 +116,7 @@ app.put('/update', async (req, res) => {
         res.json({ success: false, error: 'Internal Server Error' });
     }
 });
+
+app.get('/data/:id/:serviceName', getDataByIdAndModel());
 
 module.exports = app;
