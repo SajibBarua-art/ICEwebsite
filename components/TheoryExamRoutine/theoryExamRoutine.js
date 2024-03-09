@@ -2,7 +2,7 @@ const express = require('express');
 const app = express.Router();
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
-const CourseDistribution = mongoose.model('courseDistribution');
+const CourseDistribution = mongoose.model('coursedistributions');
 
 const theoryExamRoutineSchema = new mongoose.Schema({
     examYear: String,

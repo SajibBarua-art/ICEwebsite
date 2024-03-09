@@ -26,7 +26,7 @@ app.get('/', async (req, res) => {
     }
 });
 
-// To create a default mongodb object id
+// To create a default mongodb object id(single time use)
 app.post('/create', async (req, res) => {
     try {
         const newServiceIdData = {

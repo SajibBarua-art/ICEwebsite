@@ -114,7 +114,7 @@ const getDataByLastArrayIndex = (model) => async (req, res) => {
 
         // Check if result exists before accessing its properties
         if (!result) {
-            return res.status(404).json({ success: false, error: 'No data found' });
+            return res.json({ success: false, error: 'No data found!' });
         }
 
         // Access the last element safely
@@ -123,9 +123,28 @@ const getDataByLastArrayIndex = (model) => async (req, res) => {
         res.json({ success: true, data: lastElement });
     } catch (error) {
         console.error('Error fetching data:', error);
-        res.status(500).json({ success: false, error: 'Internal Server Error' });
+        res.json({ success: false, error: 'Internal Server Error' });
     }
 };
+
+const getDataById = (model) => async (req, res) => {
+    try {
+        const _id = req.params.id;
+        console.log("_id: ", _id);
+
+        const Model = mongoose.model(model);
+
+        const result = await Model.findOne({_id});
+        if(!result) {
+            return res.json({ success: false, error: 'No data found!' });
+        }
+
+        res.json({ success: true, data: result });
+    } catch (error) {
+        console.error('Error fetching data: ', error);
+        res.json({ success: false, error: 'Internal Server Error' });
+    }
+}
 
 // Export the middleware function for use in other routes
 module.exports = {
@@ -134,5 +153,6 @@ module.exports = {
     updateDataByYearSemester,
     deleteDataByYearSemester,
     getDataByArrayIndex,
-    getDataByLastArrayIndex
+    getDataByLastArrayIndex,
+    getDataById
 };

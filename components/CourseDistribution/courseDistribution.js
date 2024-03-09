@@ -26,10 +26,20 @@ const courseDistributionSchema = new mongoose.Schema({
             }
         ],
         required: true
-    }
+    },
+    totalBatch: String,
+    sessions: [
+        {
+            session: String,
+            startDate: Date,
+            totalStudents: String,
+            year: String,
+            term: String
+        },
+    ],
 });
 
-const CourseDistribution = mongoose.model('courseDistribution', courseDistributionSchema);
+const CourseDistribution = mongoose.model('coursedistributions', courseDistributionSchema);
 
 // Middleware to parse JSON data
 app.use(bodyParser.json());
@@ -57,14 +67,16 @@ app.get('/', async (req, res) => {
 app.post('/', async (req, res) => {
     try {
         // Extracting examYear, semester, and courseDetails from the request body
-        const { examYear, semester, courseDetails } = req.body;
+        const { examYear, semester, courseDetails, totalBatch, sessions } = req.body;
         const yearSemester = examYear.toString() + semester.toString();
 
         // Creating a new CourseDistribution instance
-        const newCourseDistribution = new CourseDistribution({ examYear, semester, yearSemester, courseDetails });
+        const newCourseDistribution = new CourseDistribution({ examYear, semester, yearSemester, courseDetails, totalBatch, sessions });
 
         // Saving the newCourseDistribution instance to the database
         const result = await newCourseDistribution.save();
+
+        console.log(result);
 
         // Sending the saved data as JSON response
         res.json({ success: true, data: result });

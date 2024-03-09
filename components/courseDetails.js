@@ -54,12 +54,22 @@ app.post("/", async (req, res) => {
 
 app.get("/", async (req, res) => {
     try {
-        // Retrieve all CourseDetails from the MongoDB database
-        const users = await CourseDetails.find({});
-        res.json({ success: true, data: users }); // Send the users as a JSON response
-    } catch (error) {
-        console.error("An error occurred in CourseDetails get function:", error);
-        res.send({ success: false, error: "Internal Server Error" });
+        let results = await CourseDetails.find({});
+        if (results) {
+            results = results.map(doc => doc.toObject()); // Convert documents to objects if necessary
+            // Sort the results based on the part of the code after the dash
+            results.sort((a, b) => {
+                const aa = a.code.split('-'), bb = b.code.split('-');
+                const lastA = aa[1], lastB = bb[1];
+                return lastA.localeCompare(lastB);
+            });
+            res.send({ success: true, data: results });
+        } else {
+            res.send({ success: false, error: 'No course details found!' });
+        }
+    } catch (e) {
+        console.error(e);
+        res.send({ success: false, error: "Internal Server Error!" });
     }
 });
 

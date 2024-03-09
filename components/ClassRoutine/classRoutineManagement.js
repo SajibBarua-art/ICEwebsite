@@ -41,7 +41,7 @@ const routineManagementSchema = new mongoose.Schema({
 });
 
 mongoose.model('RoutineManagement', routineManagementSchema);
-const { postData, getDataByYearSemester, updateDataByYearSemester, deleteDataByYearSemester, getDataByArrayIndex, getDataByLastArrayIndex } = require('../CommonOperation/commonManagement');
+const { postData, getDataByYearSemester, updateDataByYearSemester, deleteDataByYearSemester, getDataByArrayIndex, getDataByLastArrayIndex, getDataById } = require('../CommonOperation/commonManagement');
 
 // to store routine data permanently
 app.post('/', postData('RoutineManagement', 'routine'));
@@ -60,5 +60,8 @@ app.get('/byIndex/:arrayIndex', getDataByArrayIndex('RoutineManagement'));
 
 // Route to get last element
 app.get('/lastElement', getDataByLastArrayIndex('RoutineManagement'));
+
+// Route to get by id
+app.get('/data/:id', getDataById('RoutineManagement'));
 
 module.exports = app;
