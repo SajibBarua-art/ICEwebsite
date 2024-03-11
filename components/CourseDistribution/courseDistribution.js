@@ -2,7 +2,7 @@ const express = require('express');
 const app = express.Router();
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
-const { getDataByIdAndModel } = require('../CommonOperation/commonOperation');
+const { getDataByIdAndModel, updateDataByIdAndModel } = require('../CommonOperation/commonOperation');
 
 // Create Mongoose schema and model for course distribution
 const courseDistributionSchema = new mongoose.Schema({
@@ -91,31 +91,8 @@ app.post('/', async (req, res) => {
     }
 });
 
-// Route to update course distribution data
-app.put('/update', async (req, res) => {
-    try {
-        const { examYear, semester, newCourseDetails } = req.body;
-        const yearSemester = examYear + semester;
-
-        // Find the document to update
-        const existingData = await CourseDistribution.findOne({ yearSemester: yearSemester });
-
-        if (!existingData) {
-            return res.json({ success: false, error: 'Data not found for the given year and semester.' });
-        }
-
-        // Update the courseDetails field with newCourseDetails
-        existingData.courseDetails = newCourseDetails;
-
-        // Save the updated document
-        const updatedData = await existingData.save();
-
-        res.json({ success: true, data: updatedData });
-    } catch (error) {
-        console.error('Error updating course distribution:', error);
-        res.json({ success: false, error: 'Internal Server Error' });
-    }
-});
+// Route to update course distribution data by id
+app.put('/update/:id/:serviceName', updateDataByIdAndModel());
 
 app.get('/data/:id/:serviceName', getDataByIdAndModel());
 
