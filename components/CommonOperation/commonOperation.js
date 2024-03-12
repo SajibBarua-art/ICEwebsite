@@ -23,6 +23,11 @@ const updateDataByIdAndModel = () => async (req, res) => {
     const newData = req.body;
     const Model = mongoose.model(serviceName);
 
+    const yearSemester = newData.examYear.toString() + newData.semester.toString();
+    newData.yearSemester = yearSemester;
+
+    console.log(newData);
+
     try {
         const result = await Model.findByIdAndUpdate(_id, newData, { new: true });
 

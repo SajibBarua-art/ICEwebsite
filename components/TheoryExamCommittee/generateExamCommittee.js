@@ -27,10 +27,6 @@ const examCommitteeSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    classStartDate: {
-        type: Date,
-        default: Date.now
-    },
     createdAt: {
         type: Date,
         default: Date.now,
@@ -39,16 +35,17 @@ const examCommitteeSchema = new mongoose.Schema({
 
 const ExamCommittee = mongoose.model('examcommittees', examCommitteeSchema);
 
-const createExamCommittee = async (newExamComitteeMatrix, teacherWithCourses, getYear, getSemester, getDate) => {
+const createExamCommittee = async (newExamComitteeMatrix, teacherWithCourses, getYear, getSemester) => {
     try {
         // Create a new Exam Committee object
         const newExamCommittee = new ExamCommittee({
             theory: newExamComitteeMatrix,
             teachers: teacherWithCourses,
             year: getYear,
-            semester: getSemester,
-            classStartDate: getDate
+            semester: getSemester
         });
+
+        console.log(newExamCommittee);
 
         // Save the new Exam Committee
         const savedExamCommittee = await newExamCommittee.save();
@@ -65,7 +62,7 @@ const createExamCommittee = async (newExamComitteeMatrix, teacherWithCourses, ge
             console.log('Oldest Exam Committee deleted');
         }
 
-        return savedExamCommittee._id;
+        return savedExamCommittee;
     } catch (err) {
         console.error('Error saving Exam Committee:', err);
     }
@@ -126,6 +123,56 @@ const buildTeacherCourseObjects = (teachersInfo, coursesInfo) => {
                 teacherCourseObjects.push(teacherWithCourseDetails);
             }
         }
+    }
+
+    return teacherCourseObjects;
+}
+
+const buildTeacherCourse = (courseDistribution, teachersInfo, coursesInfo) => {
+    const teacherCourseObjects = [];
+
+    const courses = courseDistribution.courseDetails;
+
+    for (let i = 0; i < courses.length; i++) {
+        const courseCode = courses[i].courseCode;
+        const courseObj = coursesInfo.find(c => c.code === courseCode);
+
+        // to avoid the lab courses
+        if(courseObj.type !== 'theory') {
+            continue;
+        }
+
+        let teacherCourseObj = { course: courseObj };
+
+        // swap the teacher, if 1st one is empty
+        if(courses[i].teacherCode[0] === "") {
+            [ courses[i].teacherCode[0], courses[i].teacherCode[1] ] = [ courses[i].teacherCode[1], courses[i].teacherCode[0] ];
+            
+            // no teacher assigned => leave it
+            if(courses[i].teacherCode[0] === "") {
+                continue;
+            }
+        }
+
+        for (let j = 0; j < courses[i].teacherCode.length; j++) {
+            const teacherCode = courses[i].teacherCode[j];
+
+            if (teacherCode !== "") {
+                const teacherObj = teachersInfo.find(t => t.teacherCode === teacherCode);
+
+                // to avoid the other department teachers
+                if(teacherObj.department !== 'ICE, NSTU') {
+                    continue;
+                }
+
+                if (j == 0) {
+                    teacherCourseObj['teacher'] = teacherObj;
+                } else {
+                    teacherCourseObj['teacher2'] = teacherObj;
+                }
+            }
+        }
+        teacherCourseObjects.push(teacherCourseObj);
     }
 
     return teacherCourseObjects;
@@ -302,13 +349,26 @@ const buildExamCommittee = (teacherCourseDetails, teachersInfoSortedByCourses, t
 }
 
 // Generate a random examComittee route
-app.get('/', async (req, res) => {
+app.post('/', async (req, res) => {
     try {
+        const { year, semester } = req.body;
+        const yearSemester = year.toString() + semester.toString();
+
+        // console.log(yearSemester);
+
         // Retrieve all teachers info from the MongoDB database
+        const CourseDistribution = mongoose.model('coursedistributions');
+        const courseDistribution = await CourseDistribution.find({ yearSemester }).lean();
+        if(!courseDistribution.length) {
+            res.json({ success: false, error: "Your provided Year and Semester is not correct!" });
+            return;
+        }
+
         const teachersInfo = await Teacher.find({}).lean(); // Use .lean() to get plain JavaScript objects
         const coursesInfo = await CourseDetails.find({}).lean();
 
-        const allTeacherCourse = buildTeacherCourseObjects(teachersInfo, coursesInfo);
+        // const allTeacherCourse = buildTeacherCourseObjects(teachersInfo, coursesInfo);
+        const allTeacherCourse = buildTeacherCourse(courseDistribution[0], teachersInfo, coursesInfo);
         const yearTermWiseCourse = rearrangeCourses(allTeacherCourse);
         const teachersInfoSortedByCourses = teachersInfo, teachersInfoSortedByJoiningDate = teachersInfo;
         
@@ -337,11 +397,29 @@ app.get('/', async (req, res) => {
         }
 
         // createRoutineDatabase(yearTermWiseExamCommittee);
-        updateDatabaseExamCommittee(yearTermWiseExamCommittee, teacherWithCourses);
-        res.json({ success: true, data: yearTermWiseExamCommittee });
+        // updateDatabaseExamCommittee(yearTermWiseExamCommittee, teacherWithCourses);
+        const data = {
+            year, semester,
+            theory: yearTermWiseExamCommittee,
+            teachers: teacherWithCourses
+        }
+        res.json({ success: true, data });
     } catch (error) {
         console.error("An error occurred into the generate random examComittee:", error);
         res.send({ success: false, error: "Internal Server Error" });
+    }
+});
+
+app.post('/data', async (req, res) => {
+    try {
+        const { data } = req.body;
+
+        const result = await createExamCommittee(data.theory, data.teachers, data.year, data.semester);
+        // console.log(data);
+        res.json({ success: true, data: result });
+    } catch (error) {
+        console.error("An error occurred into the save routine:", error);
+        res.send({ success: false, error: "Internal Server Error! Try again." });
     }
 });
 
