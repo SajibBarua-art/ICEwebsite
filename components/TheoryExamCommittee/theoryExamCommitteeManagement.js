@@ -25,37 +25,31 @@ const theoryExamCommitteeManagementSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    classStartDate: {
-        type: Date,
-        default: Date.now
-    },
     createdAt: {
         type: Date,
         default: Date.now,
-    },
-    yearSemester: {
-        type: String,
-        required: true,
-        unique: true
     }
 });
 
-const TheoryExamCommitteeManagement = mongoose.model('TheoryExamCommitteeManagement', theoryExamCommitteeManagementSchema);
-const { postData, getDataByYearSemester, updateDataByYearSemester, deleteDataByYearSemester, getDataByArrayIndex } = require('../CommonOperation/commonManagement');
+mongoose.model('TheoryExamCommitteeManagement', theoryExamCommitteeManagementSchema);
+const { postData, getDataByYearSemester, updateDataByYearSemester, deleteDataByYearSemester, getDataByArrayIndex, getDataById } = require('../CommonOperation/commonManagement');
 
 // to store dutyRoaster data permanently
-app.post('/', postData(TheoryExamCommitteeManagement));
+app.post('/', postData('TheoryExamCommitteeManagement', 'examcommittees'));
 
 // Route to get dutyRoaster by year and semester
-app.get('/data/:year/:semester', getDataByYearSemester(TheoryExamCommitteeManagement));
+app.get('/data/:year/:semester', getDataByYearSemester('TheoryExamCommitteeManagement'));
 
 // Route to delete dutyRoaster by year and semester
-app.delete('/delete/:year/:semester', deleteDataByYearSemester(TheoryExamCommitteeManagement));
+app.delete('/delete/:year/:semester', deleteDataByYearSemester('TheoryExamCommitteeManagement'));
 
 // Route to update dutyRoaster by year and semester
-app.put('/update/:year/:semester', updateDataByYearSemester(TheoryExamCommitteeManagement));
+app.put('/update/:year/:semester', updateDataByYearSemester('TheoryExamCommitteeManagement'));
 
 // Route to get dutyRoaster data by array index
-app.get('/byIndex/:arrayIndex', getDataByArrayIndex(TheoryExamCommitteeManagement));
+app.get('/byIndex/:arrayIndex', getDataByArrayIndex('TheoryExamCommitteeManagement'));
+
+// Route to get by id
+app.get('/data/:id', getDataById('TheoryExamCommitteeManagement'));
 
 module.exports = app;

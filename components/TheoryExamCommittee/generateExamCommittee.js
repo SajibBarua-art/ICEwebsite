@@ -128,10 +128,10 @@ const buildTeacherCourseObjects = (teachersInfo, coursesInfo) => {
     return teacherCourseObjects;
 }
 
-const buildTeacherCourse = (courseDistribution, teachersInfo, coursesInfo) => {
+const buildTeacherCourse = (courseDistributionManagement, teachersInfo, coursesInfo) => {
     const teacherCourseObjects = [];
 
-    const courses = courseDistribution.courseDetails;
+    const courses = courseDistributionManagement.courseDetails;
 
     for (let i = 0; i < courses.length; i++) {
         const courseCode = courses[i].courseCode;
@@ -357,9 +357,9 @@ app.post('/', async (req, res) => {
         // console.log(yearSemester);
 
         // Retrieve all teachers info from the MongoDB database
-        const CourseDistribution = mongoose.model('coursedistributions');
-        const courseDistribution = await CourseDistribution.find({ yearSemester }).lean();
-        if(!courseDistribution.length) {
+        const CourseDistributionManagement = mongoose.model('CourseDistributionManagement');
+        const courseDistributionManagement = await CourseDistributionManagement.find({ yearSemester }).lean();
+        if(!courseDistributionManagement.length) {
             res.json({ success: false, error: "Your provided Year and Semester is not correct!" });
             return;
         }
@@ -368,7 +368,7 @@ app.post('/', async (req, res) => {
         const coursesInfo = await CourseDetails.find({}).lean();
 
         // const allTeacherCourse = buildTeacherCourseObjects(teachersInfo, coursesInfo);
-        const allTeacherCourse = buildTeacherCourse(courseDistribution[0], teachersInfo, coursesInfo);
+        const allTeacherCourse = buildTeacherCourse(courseDistributionManagement[0], teachersInfo, coursesInfo);
         const yearTermWiseCourse = rearrangeCourses(allTeacherCourse);
         const teachersInfoSortedByCourses = teachersInfo, teachersInfoSortedByJoiningDate = teachersInfo;
         
@@ -418,12 +418,14 @@ app.post('/data', async (req, res) => {
         // console.log(data);
         res.json({ success: true, data: result });
     } catch (error) {
-        console.error("An error occurred into the save routine:", error);
+        console.error("An error occurred into the save exam committee:", error);
         res.send({ success: false, error: "Internal Server Error! Try again." });
     }
 });
 
 module.exports = {
     app,
-    rearrangeCourses
+    rearrangeCourses,
+    buildTeacherCourse,
+    removePunctuation
 };

@@ -4,9 +4,10 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const Teacher = mongoose.model('teachers');
 const CourseDetails = mongoose.model('courseDetails');
+const { buildTeacherCourse, removePunctuation } = require("../TheoryExamCommittee/generateExamCommittee");
 
 const dutyRoasterSchema = new mongoose.Schema({
-    examYear: {
+    year: {
         type: String,
         required: true
     },
@@ -17,6 +18,16 @@ const dutyRoasterSchema = new mongoose.Schema({
     theory: {
         type: Array,
         required: true
+    },
+    teachers: {
+        type: Map,
+        of: [
+            {
+                courseCode: { type: String },
+                courseName: { type: String },
+                remark: { type: String }
+            }
+        ]
     },
     createdAt: {
         type: Date,
@@ -29,32 +40,36 @@ const TheoryDutyRoaster = mongoose.model('theorydutyroaster', dutyRoasterSchema)
 // Middleware to parse JSON data
 app.use(bodyParser.json());
 
-const createDutyRoaster = async (examYear, semester, theory) => {
+const createDutyRoaster = async (newDutyRoasterMatrix, teacherWithCourses, getYear, getSemester) => {
     try {
-        // Create a new routine object
+        // Create a new Duty Roaster object
         const newDutyRoaster = new TheoryDutyRoaster({
-            examYear, 
-            semester,
-            theory
+            theory: newDutyRoasterMatrix,
+            teachers: teacherWithCourses,
+            year: getYear,
+            semester: getSemester
         });
 
-        // Save the new routine
-        const savedRoutine = await newDutyRoaster.save();
-        console.log('Duty Roaster saved');
+        console.log(newDutyRoaster);
+
+        // Save the new Duty Roaster
+        const savedDutyRoaster = await newDutyRoaster.save();
+        console.log('TheoryDutyRoaster saved');
 
         // Check if the total number of objects exceeds 10
-        const routineCount = await TheoryDutyRoaster.countDocuments();
+        const countDatabase = await TheoryDutyRoaster.countDocuments();
+        console.log("Document count: ", countDatabase);
 
-        if (routineCount > 10) {
-            // Find and delete the oldest routine based on the date
-            const oldestRoutine = await TheoryDutyRoaster.findOne().sort({ createdAt: 1 });
-            await TheoryDutyRoaster.findByIdAndDelete(oldestRoutine._id);
+        if (countDatabase > 10) {
+            // Find and delete the oldest Duty Roaster based on the createdAt
+            const oldestExamCommittee = await TheoryDutyRoaster.findOne().sort({ createdAt: 1 });
+            await TheoryDutyRoaster.findByIdAndDelete(oldestExamCommittee._id);
             console.log('Oldest Duty Roaster deleted');
         }
 
-        return savedRoutine._id;
+        return savedDutyRoaster;
     } catch (err) {
-        console.error('Error saving duty roaster:', err);
+        console.error('Error saving Duty Roaster:', err);
     }
 };
 
@@ -71,7 +86,7 @@ const updateDutyRoaster = async (newDutyRoasterMatrix) => {
         );
 
         if (result) {
-            console.log('Exam Committee updated');
+            console.log('Duty Roaster updated');
         } else {
             console.log('No exam Committee document found');
         }
@@ -95,6 +110,10 @@ const buildTeacherCourseObjects = (teachersInfo, coursesInfo) => {
             const courseDetails = coursesInfo.find((course) => course.code === courseCode);
 
             if (courseDetails) {
+                if (courseDetails.type !== 'theory') {
+                    continue;
+                }
+
                 const teacherWithCourseDetails = { teacher: teacherWithoutCourses, course: courseDetails };
                 const teacher2 = teacherWithCourseDetails.teacher;
                 const courseCode = teacherWithCourseDetails.course.code;
@@ -137,12 +156,7 @@ const rearrangeCourses = (allTeacherCourse) => {
     return yearTermWiseCourse;
 }
 
-const removePunctuation = (inputString) => {
-    // Use a regular expression to remove all punctuation marks
-    return inputString.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "");
-}
-
-const buildDutyRoaster = (teacherCourseDetails, teachersInfoSortedByJoiningDate) => {
+const buildDutyRoaster = (teacherCourseDetails, teachersInfoSortedByJoiningDate, teacherWithCourses) => {
     const len = teacherCourseDetails.length;
     const dutyRoaster = new Array(len);
     for (let i = 0; i < len; i++) {
@@ -154,7 +168,7 @@ const buildDutyRoaster = (teacherCourseDetails, teachersInfoSortedByJoiningDate)
         takenTeachers[i] = new Set();
     }
 
-    // to 1st examiner
+    // to 1st roaster
     for (let i = 0; i < len; i++) {
         const teacher = teacherCourseDetails[i].teacher;
         const course = teacherCourseDetails[i].course;
@@ -175,6 +189,21 @@ const buildDutyRoaster = (teacherCourseDetails, teachersInfoSortedByJoiningDate)
                 department: teacher.department,
                 remark: '1st Roaster'
             }
+        }
+
+        // to handle teacher with courses database
+        const teacherName = removePunctuation(name);
+        const courseDetails = {
+            courseCode: dutyRoaster[i][0].course.code,
+            courseName: dutyRoaster[i][0].course.name,
+            remark: '1st Roaster'
+        }
+        if (teacherWithCourses[teacherName]) {
+            // If the array already exists, push the new object
+            teacherWithCourses[teacherName].push(courseDetails);
+        } else {
+            // If the array doesn't exist, create it with the new object as the first element
+            teacherWithCourses[teacherName] = [courseDetails];
         }
     }
 
@@ -208,6 +237,21 @@ const buildDutyRoaster = (teacherCourseDetails, teachersInfoSortedByJoiningDate)
                 remark: (i < len) ? '2nd Roaster' : '3rd Roaster'
             }
         }
+
+        // to handle teacher with courses database
+        const teacherName = removePunctuation(name);
+        const courseDetails = {
+            courseCode: dutyRoaster[i % len][0].course.code,
+            courseName: dutyRoaster[i % len][0].course.name,
+            remark: (i < len) ? '2nd Examiner' : '3rd Examiner'
+        }
+        if (teacherWithCourses[teacherName]) {
+            // If the array already exists, push the new object
+            teacherWithCourses[teacherName].push(courseDetails);
+        } else {
+            // If the array doesn't exist, create it with the new object as the first element
+            teacherWithCourses[teacherName] = [courseDetails];
+        }
     }
 
     return dutyRoaster;
@@ -216,14 +260,25 @@ const buildDutyRoaster = (teacherCourseDetails, teachersInfoSortedByJoiningDate)
 // Generate a random examComittee route
 app.post('/', async (req, res) => {
     try {
-        const theoryDutyRoaster = new TheoryDutyRoaster(req.body);
-        console.log(theoryDutyRoaster);
+        const { examYear, semester } = req.body;
+        const yearSemester = examYear.toString() + semester.toString();
+
+        console.log(yearSemester);
+
+        // Retrieve all teachers info from the MongoDB database
+        const CourseDistributionManagement = mongoose.model('CourseDistributionManagement');
+        const courseDistributionManagement = await CourseDistributionManagement.find({ yearSemester }).lean();
+        if(!courseDistributionManagement.length) {
+            res.json({ success: false, error: "Your provided Year and Semester is not correct!" });
+            return;
+        }
 
         // Retrieve all teachers info from the MongoDB database
         const teachersInfo = await Teacher.find({}).lean(); // Use .lean() to get plain JavaScript objects
-        const coursesInfo = await CourseDetails.find({ term: theoryDutyRoaster.semester, type: 'theory' }).lean();
+        const coursesInfo = await CourseDetails.find({}).lean();
 
-        const allTeacherCourse = buildTeacherCourseObjects(teachersInfo, coursesInfo);
+        // const allTeacherCourse = buildTeacherCourseObjects(teachersInfo, coursesInfo);
+        const allTeacherCourse = buildTeacherCourse(courseDistributionManagement[0], teachersInfo, coursesInfo);
         const yearTermWiseCourse = rearrangeCourses(allTeacherCourse);
         const teachersInfoSortedByJoiningDate = teachersInfo;
 
@@ -235,7 +290,8 @@ app.post('/', async (req, res) => {
             sortedCourses.push(...yearTermWiseCourse[i][2]);
         }
 
-        const dutyRoaster = buildDutyRoaster(sortedCourses, teachersInfoSortedByJoiningDate);
+        let teacherWithCourses = {};
+        const dutyRoaster = buildDutyRoaster(sortedCourses, teachersInfoSortedByJoiningDate, teacherWithCourses);
         let yearTermWiseDutyRoaster = new Array(7);
         for (let i = 0; i < 7; i++) {
             yearTermWiseDutyRoaster[i] = new Array(4);
@@ -249,12 +305,31 @@ app.post('/', async (req, res) => {
             yearTermWiseDutyRoaster[year][term].push(dutyRoaster[i]);
         }
 
-        createDutyRoaster(theoryDutyRoaster.examYear, theoryDutyRoaster.semester, yearTermWiseDutyRoaster);
+        // createDutyRoaster(examYear, semester, yearTermWiseDutyRoaster);
         // updateDutyRoaster(yearTermWiseDutyRoaster);
-        res.json({ success: true, data: yearTermWiseDutyRoaster });
+        const data = {
+            year: examYear, 
+            semester,
+            theory: yearTermWiseDutyRoaster,
+            teachers: teacherWithCourses
+        };
+        res.json({ success: true, data });
     } catch (error) {
         console.error("An error occurred into the generate random examComittee:", error);
         res.send({ success: false, error: "Internal Server Error" });
+    }
+});
+
+app.post('/data', async (req, res) => {
+    try {
+        const { data } = req.body;
+
+        const result = await createDutyRoaster(data.theory, data.teachers, data.year, data.semester);
+        // console.log(data);
+        res.json({ success: true, data: result });
+    } catch (error) {
+        console.error("An error occurred into the save duty roaster:", error);
+        res.send({ success: false, error: "Internal Server Error! Try again." });
     }
 });
 

@@ -2,7 +2,6 @@ const express = require('express');
 const app = express.Router();
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
-const CourseDistribution = mongoose.model('coursedistributions');
 
 const theoryExamRoutineSchema = new mongoose.Schema({
     examYear: String,
@@ -46,11 +45,12 @@ app.post('/', async (req, res) => {
 
         const yearSemester = routine.examYear.toString() + routine.semester.toString();
 
-        const courseDistribution = await CourseDistribution.find({ yearSemester }).lean();
+        const CourseDistributionManagement = mongoose.model('CourseDistributionManagement');
+        const courseDistributionManagement = await CourseDistributionManagement.find({ yearSemester }).lean();
 
         let courses = [];
-        if (courseDistribution.length) {
-            for (const courseDetails of courseDistribution[0].courseDetails) {
+        if (courseDistributionManagement.length) {
+            for (const courseDetails of courseDistributionManagement[0].courseDetails) {
                 courses.push(courseDetails.courseCode);
             }
         }

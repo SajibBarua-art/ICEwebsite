@@ -50,7 +50,7 @@ app.get('/', async (req, res) => {
     try {
         // Get examYear and semester from query parameters
         const { examYear, semester } = req.query;
-        const yearSemester = examYear + semester;
+        const yearSemester = examYear.toString() + semester.toString();
 
         // Using the find method to query the database
         const result = await CourseDistribution.findOne({ yearSemester: yearSemester });

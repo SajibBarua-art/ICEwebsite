@@ -42,9 +42,13 @@ const feedback = require('./components/feedback');
 const courseDistribution = require('./components/CourseDistribution/courseDistribution');
 const classRoutineManagement = require('./components/ClassRoutine/classRoutineManagement');
 const theoryExamRoutine = require('./components/TheoryExamRoutine/theoryExamRoutine');
-const theoryDutyRoaster = require('./components/DutyRoaster/generateTheoryDutyRoaster');
+const generateTheoryDutyRoaster = require('./components/DutyRoaster/generateTheoryDutyRoaster');
 const pendingService = require('./components/PendingOperation/pendingService');
 const serviceId = require('./components/ServiceId/serviceId');
+const CourseDistributionManagement = require('./components/CourseDistribution/courseDistributionManagement');
+const TheoryExamCommitteeManagement = require('./components/TheoryExamCommittee/theoryExamCommitteeManagement');
+const TheoryDutyRoasterOperation = require('./components/DutyRoaster/dutyRoasterOperation');
+const TheoryDutyRoasterManagement = require('./components/DutyRoaster/dutyRoasterManagement');
 
 // Use the routes for data management
 app.use('/teachers', teacherRoutes);
@@ -52,20 +56,30 @@ app.use('/courseDetails', courseDetailsRoutes);
 app.use('/students', studentRoutes);
 app.use('/timeSlot', timeSlotRoutes);
 app.use('/room', roomRoutes);
-app.use('/generateRandomRoutine', generateRandomRoutine.app);
-app.use('/routine', routineOperation);
-app.use('/generateExamCommittee', generateExamCommittee.app);
-app.use('/examCommittee', examComitteeOperation);
-app.use('/generateLabExamCommittee', generateLabExamCommittee);
-app.use('/labExamCommittee', labExamComitteeOperation);
 app.use('/teacher', committee);
 app.use('/feedback', feedback);
-app.use('/courseDistribution', courseDistribution);
-app.use('/classRoutineManagement', classRoutineManagement);
-app.use('/theoryExamRoutine', theoryExamRoutine);
-app.use('/generateTheoryDutyRoaster', theoryDutyRoaster);
 app.use('/pendingService', pendingService);
 app.use('/serviceId', serviceId);
+
+// to generate services
+app.use('/generateRandomRoutine', generateRandomRoutine.app);
+app.use('/generateExamCommittee', generateExamCommittee.app);
+app.use('/generateLabExamCommittee', generateLabExamCommittee);
+app.use('/generateTheoryDutyRoaster', generateTheoryDutyRoaster);
+
+// to temporary manipulate data for pending requests
+app.use('/routine', routineOperation);
+app.use('/examCommittee', examComitteeOperation);
+app.use('/labExamCommittee', labExamComitteeOperation);
+app.use('/courseDistribution', courseDistribution);
+app.use('/theoryExamRoutine', theoryExamRoutine);
+app.use('/theoryDutyRoaster', TheoryDutyRoasterOperation);
+
+// to permanently manipulate data
+app.use('/classRoutineManagement', classRoutineManagement);
+app.use('/CourseDistributionManagement', CourseDistributionManagement);
+app.use('/TheoryExamCommitteeManagement', TheoryExamCommitteeManagement);
+app.use('/TheoryDutyRoasterManagement', TheoryDutyRoasterManagement)
 
 app.listen(port, () => {
     console.log(`Example app listening at http://localhost:${port}`)

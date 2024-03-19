@@ -129,15 +129,15 @@ app.post('/', async (req, res) => {
         const yearSemester = year.toString() + semester.toString();
 
         // Retrieve all teachers info from the MongoDB database
-        const CourseDistribution = mongoose.model('coursedistributions');
-        const courseDistribution = await CourseDistribution.find({ yearSemester }).lean();
+        const CourseDistributionManagement = mongoose.model('CourseDistributionManagement');
+        const courseDistributionManagement = await CourseDistributionManagement.find({ yearSemester }).lean();
         const teachersInfo = await Teacher.find({}).lean(); // Use .lean() to get plain JavaScript objects
         const coursesInfo = await CourseDetails.find({}).lean();
         const timeSlot = await TimeSlot.find({}).lean();
         const room = await Room.find({}).lean();
 
         // const allTeacherCourse = buildTeacherCourseObjects(teachersInfo, coursesInfo);
-        const allTeacherCourse = buildTeacherCourse(courseDistribution[0], teachersInfo, coursesInfo);
+        const allTeacherCourse = buildTeacherCourse(courseDistributionManagement[0], teachersInfo, coursesInfo);
         // console.log(allTeacherCourse);
 
         // divide the courses according to the electrical lab, computer lab and theory
@@ -274,10 +274,10 @@ const buildTeacherCourseObjects = (teachersInfo, coursesInfo) => {
 };
 
 // fetch data from course distributions
-const buildTeacherCourse = (courseDistribution, teachersInfo, coursesInfo) => {
+const buildTeacherCourse = (courseDistributionManagement, teachersInfo, coursesInfo) => {
     const teacherCourseObjects = [];
 
-    const courses = courseDistribution.courseDetails;
+    const courses = courseDistributionManagement.courseDetails;
 
     for (let i = 0; i < courses.length; i++) {
         const courseCode = courses[i].courseCode;
