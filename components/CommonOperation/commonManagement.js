@@ -10,7 +10,7 @@ const postData = (model, temModel) => async (req, res) => {
         const data = await TemModel.findById(id).lean(); // Correctly find by id
         delete data._id;
         data.id = id;
-        console.log("tem: ", data);
+        // console.log("tem: ", data);
 
         // Save the current temporary management to the permanent Management Model
         const management = new Model(data);
@@ -24,17 +24,21 @@ const postData = (model, temModel) => async (req, res) => {
 };
 
 const getDataByYearSemester = (model) => async (req, res) => {
-    const { year, semester } = req.params;
-    const yearSemester = year.toString() + semester.toString();
-    const Model = mongoose.Model(model);
+    let { year, semester } = req.params;
+    year = year.toString(); semester = semester.toString();
+    const Model = mongoose.model(model);
+
+    console.log(year, semester);
 
     try {
-        const result = await Model.findById(yearSemester);
+        const result = await Model.find({ year, semester });
 
-        if (result) {
+        console.log(result);
+
+        if (result.length !== 0) {
             res.json({ success: true, data: result });
         } else {
-            res.json({ success: false, error: 'Data not found!' });
+            res.json({ success: false, error: 'Data not found! Your provided year and semester is not registered on the course distribution page!' });
         }
     } catch (error) {
         console.error("An error occurred while retrieving data:", error);
@@ -45,7 +49,7 @@ const getDataByYearSemester = (model) => async (req, res) => {
 const updateDataByYearSemester = (model) => async (req, res) => {
     const { year, semester } = req.params;
     const yearSemester = year.toString() + semester.toString();
-    const Model = mongoose.Model(model);
+    const Model = mongoose.model(model);
 
     try {
         const result = await Model.findByIdAndUpdate(yearSemester, newData, { new: true });
@@ -53,7 +57,7 @@ const updateDataByYearSemester = (model) => async (req, res) => {
         if (result) {
             res.json({ success: true, data: result });
         } else {
-            res.json({ success: false, error: 'Data not found!' });
+            res.json({ success: false, error: 'Data not found! Your provided year and semester is not registered yet!' });
         }
     } catch (error) {
         console.error("An error occurred while updating data:", error);
@@ -64,7 +68,7 @@ const updateDataByYearSemester = (model) => async (req, res) => {
 const deleteDataByYearSemester = (model) => async (req, res) => {
     const { year, semester } = req.params;
     const yearSemester = year.toString() + semester.toString();
-    const Model = mongoose.Model(model);
+    const Model = mongoose.model(model);
 
     try {
         // Find and delete the object
@@ -83,7 +87,7 @@ const deleteDataByYearSemester = (model) => async (req, res) => {
 
 const getDataByArrayIndex = (model) => async (req, res) => {
     try {
-        const Model = mongoose.Model(model);
+        const Model = mongoose.model(model);
         const arrayIndex = parseInt(req.params.arrayIndex, 10);
 
         // Find the management and project only the specified array element by index

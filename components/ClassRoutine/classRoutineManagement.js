@@ -41,7 +41,14 @@ const routineManagementSchema = new mongoose.Schema({
 });
 
 mongoose.model('RoutineManagement', routineManagementSchema);
-const { postData, getDataByYearSemester, updateDataByYearSemester, deleteDataByYearSemester, getDataByArrayIndex, getDataByLastArrayIndex, getDataById } = require('../CommonOperation/commonManagement');
+const { 
+    postData, 
+    getDataByYearSemester, 
+    updateDataByYearSemester, 
+    deleteDataByYearSemester, 
+    getDataByArrayIndex, 
+    getDataByLastArrayIndex, 
+    getDataById } = require('../CommonOperation/commonManagement');
 
 // to store routine data permanently
 app.post('/', postData('RoutineManagement', 'routine'));

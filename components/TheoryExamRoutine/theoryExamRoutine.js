@@ -2,6 +2,7 @@ const express = require('express');
 const app = express.Router();
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+const { shuffleArray } = require('../ClassRoutine/generateRandomRoutine');
 
 const theoryExamRoutineSchema = new mongoose.Schema({
     examYear: String,
@@ -37,37 +38,97 @@ const TheoryExamRoutine = mongoose.model('TheoryExamRoutine', theoryExamRoutineS
 // Middleware to parse JSON data
 app.use(bodyParser.json());
 
+const createRoutineDatabase = async (examYear, semester, totalBatch, gapBetweenExams, sessions, unavailableDates, theoryExamRoutine) => {
+    try {
+        // Create a new routine object
+        const newRoutine = new TheoryExamRoutine({
+            examYear,
+            semester,
+            totalBatch,
+            gapBetweenExams,
+            sessions,
+            unavailableDates,
+            theoryExamRoutine
+        });
+
+        console.log(examYear, semester);
+
+        // Save the new routine
+        const savedRoutine = await newRoutine.save();
+        console.log('TheoryExamRoutine saved');
+
+        // Check if the total number of objects exceeds 10
+        const routineCount = await TheoryExamRoutine.countDocuments();
+        console.log("Document count: ", routineCount);
+
+        if (routineCount > 10) {
+            // Find and delete the oldest routine based on the classStartDate
+            const oldestRoutine = await TheoryExamRoutine.findOne().sort({ createdAt: 1 });
+            await TheoryExamRoutine.findByIdAndDelete(oldestRoutine._id);
+            console.log('Oldest theory exam routine deleted');
+        }
+
+        return savedRoutine;
+    } catch (err) {
+        console.error('Error saving theory exam routine:', err);
+    }
+};
+
 app.post('/', async (req, res) => {
     try {
         // Extract data from the request body
-        const theoryExamRoutine = new TheoryExamRoutine(req.body);
-        const routine = theoryExamRoutine.toObject();
+        const newTheoryExamRoutine = new TheoryExamRoutine(req.body);
+        const routine = newTheoryExamRoutine.toObject();
+        const {
+            examYear,
+            semester,
+            totalBatch,
+            gapBetweenExams,
+            sessions,
+            unavailableDates
+        } = routine;
 
-        const yearSemester = routine.examYear.toString() + routine.semester.toString();
+        const yearSemester = examYear.toString() + semester.toString();
 
         const CourseDistributionManagement = mongoose.model('CourseDistributionManagement');
         const courseDistributionManagement = await CourseDistributionManagement.find({ yearSemester }).lean();
 
         let courses = [];
-        if (courseDistributionManagement.length) {
+        if (courseDistributionManagement) {
             for (const courseDetails of courseDistributionManagement[0].courseDetails) {
                 courses.push(courseDetails.courseCode);
             }
         }
 
-        const newRoutine = buildTheoryExamRoutine(routine.sessions, routine.unavailableDates, courses, routine.gapBetweenExams);
+        const newExamRoutine = buildTheoryExamRoutine(sessions, unavailableDates, courses, gapBetweenExams);
 
-        routine.theoryExamRoutine = newRoutine;
+        const data = {
+            examYear,
+            semester,
+            totalBatch,
+            gapBetweenExams,
+            sessions,
+            unavailableDates,
+            theoryExamRoutine: newExamRoutine
+        }
 
-        // console.log(routine);
-        const newTheoryExamRoutine = new TheoryExamRoutine(routine);
-
-        const respRoutine = await newTheoryExamRoutine.save();
-
-        res.json({ success: true, data: respRoutine });
+        res.json({ success: true, data });
     } catch (error) {
         console.error('Error saving exam routine:', error);
         res.json({ success: false, error: 'Internal Server Error' });
+    }
+});
+
+app.post('/data', async (req, res) => {
+    try {
+        const { data } = req.body;
+
+        const result = await createRoutineDatabase(data.examYear, data.semester, data.totalBatch, data.gapBetweenExams, data.sessions, data.unavailableDates, data.theoryExamRoutine);
+        // console.log(data);
+        res.json({ success: true, data: result });
+    } catch (error) {
+        console.error("An error occurred into the save routine:", error);
+        res.send({ success: false, error: "Internal Server Error! Try again." });
     }
 });
 
@@ -75,10 +136,9 @@ app.get('/', async (req, res) => {
     try {
         // Get examYear and semester from query parameters
         const { examYear, semester } = req.query;
-        const yearSemester = examYear + semester;
 
         // Using the find method to query the database
-        const result = await TheoryExamRoutine.findOne({ yearSemester: yearSemester });
+        const result = await TheoryExamRoutine.find({ examYear, semester });
 
         // Sending the result as JSON response
         res.json({ success: true, data: result });
@@ -91,9 +151,8 @@ app.get('/', async (req, res) => {
 app.put('/update', async (req, res) => {
     try {
         const { examYear, semester, newTheoryExamRoutine } = req.query;
-        const yearSemester = examYear + semester;
 
-        const existingData = await TheoryExamRoutine.findOne({ yearSemester: yearSemester });
+        const existingData = await TheoryExamRoutine.findOne({ examYear, semester });
 
         if (!existingData) {
             return res.json({ success: false, error: 'Data not found for the given year and semester.' });
@@ -180,6 +239,9 @@ const rearrangeByYearAndTerm = (arr) => {
 }
 
 const buildRoutine = (startDate, unavailableDates, dayGap, courses) => {
+    // shuffle courses array
+    shuffleArray(courses);
+
     let currentDate = new Date(startDate);
     let theoryExamRoutine = [];
     const gap = parseInt(dayGap, 10);
@@ -195,7 +257,7 @@ const buildRoutine = (startDate, unavailableDates, dayGap, courses) => {
         }
 
         // Skip unavailable dates
-        while (unavailableDates.length !== 0 && unavailableDates.includes(currentDate.toISOString().split('T')[0])) {
+        while (unavailableDates.length !== 0 && unavailableDates.has(currentDate.toISOString().split('T')[0])) {
             // add 1 day
             currentDate.setDate(currentDate.getDate() + 1);
             dayIndex = getDayOfWeek(currentDate);
@@ -206,7 +268,7 @@ const buildRoutine = (startDate, unavailableDates, dayGap, courses) => {
             courseCode: course
         };
         theoryExamRoutine.push(allocation);
-        unavailableDates.push(currentDate);
+        unavailableDates.add(currentDate.toISOString().split('T')[0]);
 
         // Add three days (3 * 24 hours) to the date for the next course
         currentDate.setDate(currentDate.getDate() + gap);
@@ -217,12 +279,30 @@ const buildRoutine = (startDate, unavailableDates, dayGap, courses) => {
 const buildTheoryExamRoutine = (sessions, unavailableDates, courses, gap) => {
     // to sorted courses by year and term
     const yearTermWiseCourses = rearrangeByYearAndTerm(courses);
-    let takenDates = unavailableDates.slice();
+
+    for(let i=0; i < unavailableDates.length; i++) {
+        unavailableDates[i] = unavailableDates[i].toISOString();
+    }
+
+    let takenDates = new Set();
+    unavailableDates.forEach(date => {
+        const onlyDate = date.slice(0, 10);
+        takenDates.add(onlyDate);
+    })
 
     let routine = [];
     for (const session of sessions) {
         routine.push(...buildRoutine(session.startDate, takenDates, gap, yearTermWiseCourses[session.year][session.term]));
     }
+
+    // Convert date strings to Date objects and sort
+    routine.sort((a, b) => {
+        const [dayA, monthA, yearA] = a.date.split('/').map(Number);
+        const [dayB, monthB, yearB] = b.date.split('/').map(Number);
+        const dateA = new Date(yearA, monthA - 1, dayA); // month is 0-indexed in Date constructor
+        const dateB = new Date(yearB, monthB - 1, dayB);
+        return dateA - dateB;
+    });
 
     return routine;
 }

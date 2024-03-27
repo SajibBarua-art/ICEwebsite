@@ -32,7 +32,17 @@ const courseDistributionManagementSchema = new mongoose.Schema({
             }
         ],
         required: true
-    }
+    },
+    totalBatch: String,
+    sessions: [
+        {
+            session: String,
+            startDate: Date,
+            totalStudents: String,
+            year: String,
+            term: String
+        },
+    ],
 });
 
 mongoose.model('CourseDistributionManagement', courseDistributionManagementSchema);
