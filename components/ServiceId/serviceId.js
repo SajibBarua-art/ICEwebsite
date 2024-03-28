@@ -11,6 +11,7 @@ const serviceIdSchema = new mongoose.Schema({
     labDutyRoaster: mongoose.Schema.Types.ObjectId,
     theoryExamRoutine: mongoose.Schema.Types.ObjectId,
     labExamRoutine: mongoose.Schema.Types.ObjectId,
+    courseDistribution: mongoose.Schema.Types.ObjectId,
 });
 
 const ServiceId = mongoose.model('serviceId', serviceIdSchema);
@@ -36,7 +37,8 @@ app.post('/create', async (req, res) => {
             theoryDutyRoaster: new ObjectId(),
             labDutyRoaster: new ObjectId(),
             theoryExamRoutine: new ObjectId(),
-            labExamRoutine: new ObjectId()
+            labExamRoutine: new ObjectId(),
+            courseDistribution: new ObjectId(),
         }
 
         // Create a new service ID

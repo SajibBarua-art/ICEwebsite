@@ -50,6 +50,7 @@ const TheoryExamCommitteeManagement = require('./components/TheoryExamCommittee/
 const TheoryDutyRoasterOperation = require('./components/DutyRoaster/dutyRoasterOperation');
 const TheoryDutyRoasterManagement = require('./components/DutyRoaster/dutyRoasterManagement');
 const TheoryExamRoutineManagement = require('./components/TheoryExamRoutine/theoryExamRoutineManagement');
+const TheoryExamRoutineOperation = require('./components/TheoryExamRoutine/theoryExamRoutineOperation');
 
 // Use the routes for data management
 app.use('/teachers', teacherRoutes);
@@ -73,7 +74,7 @@ app.use('/routine', routineOperation);
 app.use('/examCommittee', examComitteeOperation);
 app.use('/labExamCommittee', labExamComitteeOperation);
 app.use('/courseDistribution', courseDistribution);
-app.use('/theoryExamRoutine', theoryExamRoutine);
+app.use('/theoryExamRoutine', TheoryExamRoutineOperation);
 app.use('/theoryDutyRoaster', TheoryDutyRoasterOperation);
 
 // to permanently manipulate data

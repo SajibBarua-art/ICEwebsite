@@ -43,20 +43,27 @@ const courseDistributionManagementSchema = new mongoose.Schema({
             term: String
         },
     ],
+    createdAt: {
+        type: Date,
+        default: Date.now,
+    },
 });
 
 mongoose.model('CourseDistributionManagement', courseDistributionManagementSchema);
 
-const { postData, getDataByYearSemester, updateDataByYearSemester, deleteDataByYearSemester, getDataByArrayIndex, getDataById } = require('../CommonOperation/commonManagement');
+const { postData, getAllData, getDataByYearSemester, updateDataByYearSemester, deleteDataById, getDataByArrayIndex, getDataById } = require('../CommonOperation/commonManagement');
 
 // to store courseDistribution data permanently
 app.post('/', postData('CourseDistributionManagement', 'coursedistributions'));
+
+// to get all data
+app.get('/data', getAllData('CourseDistributionManagement'));
 
 // Route to get courseDistribution by year and semester
 app.get('/data/:year/:semester', getDataByYearSemester('CourseDistributionManagement'));
 
 // Route to delete courseDistribution by year and semester
-app.delete('/delete/:year/:semester', deleteDataByYearSemester('CourseDistributionManagement'));
+app.delete('/delete/:year/:semester', deleteDataById('CourseDistributionManagement'));
 
 // Route to update courseDistribution by year and semester
 app.put('/update/:year/:semester', updateDataByYearSemester('CourseDistributionManagement'));

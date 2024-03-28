@@ -41,11 +41,10 @@ const routineManagementSchema = new mongoose.Schema({
 });
 
 mongoose.model('RoutineManagement', routineManagementSchema);
-const { 
-    postData, 
+const { postData, getAllData, 
     getDataByYearSemester, 
     updateDataByYearSemester, 
-    deleteDataByYearSemester, 
+    deleteDataById, 
     getDataByArrayIndex, 
     getDataByLastArrayIndex, 
     getDataById } = require('../CommonOperation/commonManagement');
@@ -53,11 +52,14 @@ const {
 // to store routine data permanently
 app.post('/', postData('RoutineManagement', 'routine'));
 
+// to get all data
+app.get('/data', getAllData('RoutineManagement'));
+
 // Route to get routine by year and semester
 app.get('/data/:year/:semester', getDataByYearSemester('RoutineManagement'));
 
 // Route to delete routine by year and semester
-app.delete('/delete/:year/:semester', deleteDataByYearSemester('RoutineManagement'));
+app.delete('/delete/:id', deleteDataById('RoutineManagement'));
 
 // Route to update routine by year and semester
 app.put('/update/:year/:semester', updateDataByYearSemester('RoutineManagement'));

@@ -28,20 +28,27 @@ const TheoryExamRoutineManagementSchema = new mongoose.Schema({
             }
         ],
         default: []
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now,
     }
 });
 
 mongoose.model('TheoryExamRoutineManagement', TheoryExamRoutineManagementSchema);
-const { postData, getDataByYearSemester, updateDataByYearSemester, deleteDataByYearSemester, getDataByArrayIndex, getDataById } = require('../CommonOperation/commonManagement');
+const { postData, getAllData, getDataByYearSemester, updateDataByYearSemester, deleteDataById, getDataByArrayIndex, getDataById } = require('../CommonOperation/commonManagement');
 
 // to store dutyRoaster data permanently
 app.post('/', postData('TheoryExamRoutineManagement', 'TheoryExamRoutine'));
+
+// to get all data
+app.get('/data', getAllData('TheoryExamRoutineManagement'));
 
 // Route to get dutyRoaster by year and semester
 app.get('/data/:year/:semester', getDataByYearSemester('TheoryExamRoutineManagement'));
 
 // Route to delete dutyRoaster by year and semester
-app.delete('/delete/:year/:semester', deleteDataByYearSemester('TheoryExamRoutineManagement'));
+app.delete('/delete/:year/:semester', deleteDataById('TheoryExamRoutineManagement'));
 
 // Route to update dutyRoaster by year and semester
 app.put('/update/:year/:semester', updateDataByYearSemester('TheoryExamRoutineManagement'));

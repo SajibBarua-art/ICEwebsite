@@ -31,10 +31,6 @@ const routineSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     },
-    createdAt: {
-        type: Date,
-        default: Date.now,
-    },
     routineDetails: {
         type: [
             {

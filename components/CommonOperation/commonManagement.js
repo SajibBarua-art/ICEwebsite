@@ -23,17 +23,30 @@ const postData = (model, temModel) => async (req, res) => {
     }
 };
 
+const getAllData = (model) => async (req, res) => {
+    const Model = mongoose.model(model);
+
+    try {
+        const result = await Model.find({});
+
+        if (result.length !== 0) {
+            res.json({ success: true, data: result, message: '' });
+        } else {
+            res.json({ success: true, data: result, message: 'There is no data found to this specific selected service!' });
+        }
+    } catch (error) {
+        console.error("An error occurred while retrieving data:", error);
+        res.send({ success: false, error: "Internal Server Error" });
+    }
+}
+
 const getDataByYearSemester = (model) => async (req, res) => {
     let { year, semester } = req.params;
     year = year.toString(); semester = semester.toString();
     const Model = mongoose.model(model);
 
-    console.log(year, semester);
-
     try {
         const result = await Model.find({ year, semester });
-
-        console.log(result);
 
         if (result.length !== 0) {
             res.json({ success: true, data: result });
@@ -65,14 +78,15 @@ const updateDataByYearSemester = (model) => async (req, res) => {
     }
 };
 
-const deleteDataByYearSemester = (model) => async (req, res) => {
-    const { year, semester } = req.params;
-    const yearSemester = year.toString() + semester.toString();
+const deleteDataById = (model) => async (req, res) => {
+    const { id } = req.params;
     const Model = mongoose.model(model);
+
+    console.log(id);
 
     try {
         // Find and delete the object
-        const deletedObject = await Model.findOneAndDelete({ yearSemester });
+        const deletedObject = await Model.findOneAndDelete({ id });
 
         if (!deletedObject) {
             return res.json({ success: false, error: 'Not found! Check provided year and Semester.' });
@@ -133,12 +147,12 @@ const getDataByLastArrayIndex = (model) => async (req, res) => {
 
 const getDataById = (model) => async (req, res) => {
     try {
-        const _id = req.params.id;
-        console.log("_id: ", _id);
+        const id = req.params.id;
+        console.log("id: ", id);
 
         const Model = mongoose.model(model);
 
-        const result = await Model.findOne({_id});
+        const result = await Model.findOne({ _id: id });
         if(!result) {
             return res.json({ success: false, error: 'No data found!' });
         }
@@ -153,9 +167,10 @@ const getDataById = (model) => async (req, res) => {
 // Export the middleware function for use in other routes
 module.exports = {
     postData,
+    getAllData,
     getDataByYearSemester,
     updateDataByYearSemester,
-    deleteDataByYearSemester,
+    deleteDataById,
     getDataByArrayIndex,
     getDataByLastArrayIndex,
     getDataById
