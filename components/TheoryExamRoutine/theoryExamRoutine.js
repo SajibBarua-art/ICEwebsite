@@ -63,7 +63,7 @@ const createRoutineDatabase = async (examYear, semester, totalBatch, gapBetweenE
 
         if (routineCount > 10) {
             // Find and delete the oldest routine based on the classStartDate
-            const oldestRoutine = await TheoryExamRoutine.findOne().sort({ createdAt: 1 });
+            const oldestRoutine = await TheoryExamRoutine.findOne();
             await TheoryExamRoutine.findByIdAndDelete(oldestRoutine._id);
             console.log('Oldest theory exam routine deleted');
         }

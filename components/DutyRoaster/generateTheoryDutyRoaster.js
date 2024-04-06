@@ -62,7 +62,7 @@ const createDutyRoaster = async (newDutyRoasterMatrix, teacherWithCourses, getYe
 
         if (countDatabase > 10) {
             // Find and delete the oldest Duty Roaster based on the createdAt
-            const oldestExamCommittee = await TheoryDutyRoaster.findOne().sort({ createdAt: 1 });
+            const oldestExamCommittee = await TheoryDutyRoaster.findOne();
             await TheoryDutyRoaster.findByIdAndDelete(oldestExamCommittee._id);
             console.log('Oldest Duty Roaster deleted');
         }

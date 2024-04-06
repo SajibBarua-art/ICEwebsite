@@ -26,7 +26,7 @@ const updateDataByIdAndModel = () => async (req, res) => {
     const yearSemester = newData.examYear.toString() + newData.semester.toString();
     newData.yearSemester = yearSemester;
 
-    console.log(newData);
+    console.log("update: ", newData);
 
     try {
         const result = await Model.findByIdAndUpdate(_id, newData, { new: true });

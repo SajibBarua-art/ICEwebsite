@@ -57,7 +57,7 @@ const createExamCommittee = async (newExamComitteeMatrix, teacherWithCourses, ge
 
         if (countDatabase > 10) {
             // Find and delete the oldest Exam Committee based on the createdAt
-            const oldestExamCommittee = await ExamCommittee.findOne().sort({ createdAt: 1 });
+            const oldestExamCommittee = await ExamCommittee.findOne();
             await ExamCommittee.findByIdAndDelete(oldestExamCommittee._id);
             console.log('Oldest Exam Committee deleted');
         }

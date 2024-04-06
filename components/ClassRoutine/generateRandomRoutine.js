@@ -58,20 +58,20 @@ const createRoutineDatabase = async (routineMatrix, yearTerm, teachersName, getY
 
         console.log(getYear, getSemester);
 
-        // Save the new routine
-        const savedRoutine = await newRoutine.save();
-        console.log('Routine saved');
-
         // Check if the total number of objects exceeds 10
         const routineCount = await Routine.countDocuments();
         console.log("Document count: ", routineCount);
 
         if (routineCount > 10) {
             // Find and delete the oldest routine based on the classStartDate
-            const oldestRoutine = await Routine.findOne().sort({ createdAt: 1 });
+            const oldestRoutine = await Routine.findOne();
             await Routine.findByIdAndDelete(oldestRoutine._id);
             console.log('Oldest routine deleted');
         }
+
+        // Save the new routine
+        const savedRoutine = await newRoutine.save();
+        console.log('Routine saved');
 
         return savedRoutine;
     } catch (err) {
@@ -127,6 +127,12 @@ app.post('/', async (req, res) => {
         // Retrieve all teachers info from the MongoDB database
         const CourseDistributionManagement = mongoose.model('CourseDistributionManagement');
         const courseDistributionManagement = await CourseDistributionManagement.find({ yearSemester }).lean();
+
+        console.log(courseDistributionManagement);
+        if(courseDistributionManagement.length === 0) {
+            res.send({ success: false, error: "No data found on your specific year and semester!!!" });
+            return;
+        }
         const teachersInfo = await Teacher.find({}).lean(); // Use .lean() to get plain JavaScript objects
         const coursesInfo = await CourseDetails.find({}).lean();
         const timeSlot = await TimeSlot.find({}).lean();
@@ -230,7 +236,7 @@ app.post('/data', async (req, res) => {
         const { data } = req.body;
 
         const result = await createRoutineDatabase(data.overall, data.yearTerm, data.routineTeachersName, data.year, data.semester, data.classStartDate, data.routineDetails);
-        // console.log(data);
+        console.log(data);
         res.json({ success: true, data: result });
     } catch (error) {
         console.error("An error occurred into the save routine:", error);
