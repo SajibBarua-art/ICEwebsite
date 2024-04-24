@@ -46,7 +46,10 @@ const getDataByYearSemester = (model) => async (req, res) => {
     const Model = mongoose.model(model);
 
     try {
-        const result = await Model.find({ year, semester });
+        let result = await Model.find({ year, semester });
+        if(result.length === 0) {
+            result = await Model.find({ examYear: year, semester });
+        }
 
         if (result.length !== 0) {
             res.json({ success: true, data: result });

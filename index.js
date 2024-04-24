@@ -51,6 +51,7 @@ const TheoryDutyRoasterOperation = require('./components/DutyRoaster/dutyRoaster
 const TheoryDutyRoasterManagement = require('./components/DutyRoaster/dutyRoasterManagement');
 const TheoryExamRoutineManagement = require('./components/TheoryExamRoutine/theoryExamRoutineManagement');
 const TheoryExamRoutineOperation = require('./components/TheoryExamRoutine/theoryExamRoutineOperation');
+const TheoryExamRoutine = require('./components/TheoryExamRoutine/theoryExamRoutine');
 
 // Use the routes for data management
 app.use('/teachers', teacherRoutes);
@@ -68,6 +69,7 @@ app.use('/generateRandomRoutine', generateRandomRoutine.app);
 app.use('/generateExamCommittee', generateExamCommittee.app);
 app.use('/generateLabExamCommittee', generateLabExamCommittee);
 app.use('/generateTheoryDutyRoaster', generateTheoryDutyRoaster);
+app.use('/generateTheoryExamRoutine', TheoryExamRoutine);
 
 // to temporary manipulate data for pending requests
 app.use('/routine', routineOperation);
