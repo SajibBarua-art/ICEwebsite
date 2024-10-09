@@ -1,3 +1,70 @@
+# Teacher CoPilot
+
+**Description**: The primary goal of this project is to reduce the hectic workload of a teacher. Built on the MERN stack, this application serves as the **backend** for the Teacher CoPilot, providing essential functionalities for creating, showing and storing the class routine, exam routine, duty roaster, exam committee and billing.
+
+---
+
+## Table of Contents
+1. [Features](#features)
+2. [Installation](#installation)
+3. [Usage](#usage)
+4. [Technologies Used](#technologies-used)
+5. [Contributing](#contributing)
+6. [Contact](#contact)
+
+---
+
+## Features
+- **Generate** a class routine, exam routine, exam committee or duty roaster by performing only one API call.
+- **Show** a class routine, exam routine, exam committee or duty roaster by performing only one API call.
+- Show teachers information.
+- Show and update admin panel.
+
+---
+
+## Installation
+
+Provide a step-by-step guide to setting up the project locally.
+
+1. **Clone the repository:**
+
+   ```bash
+   git clone https://github.com/SajibBarua-art/ICEwebsite.git
+   ```
+
+2. **Navigate to the project directory:**
+
+   ```bash
+   cd ICEwebsite
+   ```
+
+3. **Install dependencies:**
+
+   ```bash
+   npm install
+   ```
+4. **.env setup:**
+   ```
+   DB_USER = 'your_mongodb_username'
+   DB_PASS = 'your_mongodb_password'
+   DB_NAME = 'database_name'
+   ```
+
+4. **To start the frontend development server:**
+   
+
+   To start the server:
+   ```
+   npm start
+   ```
+
+   Using Nodemon (for Development):
+   ```
+   npx nodemon index.js
+   ```
+---
+
+## Usage
 ### Databases name and their basic object structure:
 **1. teachers (teachers information)**  
 - firstName - string  
@@ -118,7 +185,34 @@ Api's:
 - To post: api/classRoutineManagement
 - To get by year and semester: api/classRoutineManagement/${getYear}/${getSemester}
 - To get by array index: api/classRoutineManagement/${routineIndex}
-  
-**Scratch Front End code link:** https://github.com/SajibBarua-art/ICEwebsiteScratchClient  
-**Backend code link:** https://github.com/SajibBarua-art/ICEwebsite  
-**API:**  https://ice-mrgu5zlmj-sajib-baruas-projects.vercel.app/
+
+---
+
+## Technologies Used
+- **body-parser**: version 1.20.2
+- **cmap**: version 0.1.3
+- **cors**: version 2.8.5
+- **dotenv**: version 16.3.1
+- **express**: version 4.18.2
+- **fastpriorityqueue**: version 0.7.4
+- **mongodb**: version 6.2.0
+- **mongoose**: version 7.6.3
+- **nodemon**: version 3.0.1
+- **punycode.js**: version 2.3.0
+
+---
+
+## Contributing
+- Fork the repository.
+- Create a new branch ```(git checkout -b feature-branch)```
+- Commit your changes ```(git commit -m 'Add some feature')```
+- Push to the branch ```(git push origin feature-branch)```
+- Open a pull request.
+
+---
+
+## Contact
+For any kinds of suggestions, issues, or contributions:
+- Email: sajib715b@gmail.com
+- LinkedIn: [Sajib Barua](https://www.linkedin.com/in/sajib-barua-475814203) or
+            [Subreena](https://www.linkedin.com/in/subreena-264a181b1/)
