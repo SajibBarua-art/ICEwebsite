@@ -73,4 +73,57 @@ app.get("/", async (req, res) => {
     }
 });
 
+// Route to delete a course
+app.delete('/delete/:id', async(req, res) => {
+    const { id } = req.params;
+
+    try {
+        // Delete data that matches the service name
+        const result = await CourseDetails.deleteOne({ _id: id });
+
+        if (result.deletedCount > 0) {
+            res.json({ success: true });
+        } else {
+            res.status(404).json({ success: false, error: 'No matching objects found for deletion.' });
+        }
+    } catch (error) {
+        console.error("Error occurred while deleting objects:", error);
+        res.status(500).json({ success: false, error: "An error occurred while deleting objects." });
+    }
+});
+
+// Route to update a course
+app.put('/update/:id', async (req, res) => {
+    const { id } = req.params;
+    const updatedCourseData = req.body;
+
+    console.log("Updating course:", id, updatedCourseData);
+
+    try {
+        // Find and update the course by ID, ensuring validators run (including unique constraint)
+        const course = await CourseDetails.findByIdAndUpdate(
+        id,
+        { $set: updatedCourseData },
+        { new: true, runValidators: true } // Returns the updated document and enforces validation
+        );
+
+        if (!course) {
+        return res.status(404).json({ success: false, error: 'Course not found.' });
+        }
+
+        res.json({ success: true, message: 'Course updated successfully.', data: course });
+    } catch (error) {
+        if (error.code === 11000) {
+        // Duplicate key error (unique constraint violation)
+        return res.status(400).json({
+            success: false,
+            error: `Duplicate entry: course ${Object.keys(error.keyValue)[0]} must be unique.`,
+        });
+        }
+
+        console.error("Error occurred while updating the course:", error);
+        res.status(500).json({ success: false, error: "An error occurred while updating the course." });
+    }
+});
+
 module.exports = app;
