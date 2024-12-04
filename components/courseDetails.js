@@ -61,6 +61,12 @@ app.get("/", async (req, res) => {
             results.sort((a, b) => {
                 const aa = a.code.split('-'), bb = b.code.split('-');
                 const lastA = aa[1], lastB = bb[1];
+                
+                if(aa[0] != bb[0] && a.year === b.year && a.term === b.term) {
+                    if(aa[0] === "ICE") return -1;
+                    if(bb[0] === "ICE") return 1;
+                }
+                
                 return lastA.localeCompare(lastB);
             });
             res.send({ success: true, data: results });
