@@ -63,7 +63,7 @@ app.get('/data', getAllData('CourseDistributionManagement'));
 app.get('/data/:year/:semester', getDataByYearSemester('CourseDistributionManagement'));
 
 // Route to delete courseDistribution by year and semester
-app.delete('/delete/:year/:semester', deleteDataById('CourseDistributionManagement'));
+app.delete('/delete/:id', deleteDataById('CourseDistributionManagement'));
 
 // Route to update courseDistribution by year and semester
 app.put('/update/:year/:semester', updateDataByYearSemester('CourseDistributionManagement'));

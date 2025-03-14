@@ -4,8 +4,7 @@ const mongoose = require('mongoose');
 
 const teacherSchema = new mongoose.Schema({
     firstName: {
-        type: String,
-        required: true,
+        type: String
     },
     lastName: {
         type: String,
@@ -30,8 +29,7 @@ const teacherSchema = new mongoose.Schema({
         default: []
     },
     designation: {
-        type: String,
-        required: true
+        type: String
     },
     department: {
         type: String,
@@ -39,7 +37,8 @@ const teacherSchema = new mongoose.Schema({
     },
     password: {
         type: String,
-        required: true
+        required: true,
+        default: "Ha Ha Ha"
     },
     joiningDate: {
         type: Date,
@@ -65,6 +64,8 @@ app.post("/", async (req, res) => {
         const teacher = new Teacher(req.body);
         let result = await teacher.save();
         result = result.toObject();
+
+        console.log("working");
         if (result) {
             delete result.password;
             res.send({ success: true, data: result });
@@ -75,7 +76,8 @@ app.post("/", async (req, res) => {
         }
  
     } catch (e) {
-        res.send({ success: false, error: "Error in teacher register panel" });
+        console.log(e);
+        res.send({ success: false, error: "Error in teacher register panel", e: e });
     }
 });
 
