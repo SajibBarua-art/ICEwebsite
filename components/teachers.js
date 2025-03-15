@@ -64,12 +64,10 @@ app.post("/", async (req, res) => {
         const teacher = new Teacher(req.body);
         let result = await teacher.save();
         result = result.toObject();
-
-        console.log("working");
         if (result) {
             delete result.password;
             res.send({ success: true, data: result });
-            console.log(result);
+            // console.log(result);
         } else {
             res.send({ success: false, error: 'This gmail account is already registered!' });
             console.log("teacher already registered");
@@ -132,6 +130,35 @@ app.put('/updateTeacher', async (req, res) => {
     }
 });
 
+// Update an external teacher by email
+app.put('/updateExternalTeacher', async (req, res) => {
+    const { email, newData } = req.body;
+  
+    try {
+        if (newData.department === "ICE, NSTU") {
+            console.log("The teacher is not an external teacher!");
+            return res.json({ success: false, error: "The teacher is not an external teacher!" });
+        }
+        
+        // Find the teacher by email and update
+        const updatedTeacher = await Teacher.findOneAndUpdate(
+            { email },
+            newData,
+            { new: true } // Return the updated document
+        );
+  
+        if (!updatedTeacher) {
+            console.log('Your provided email address has no teacher profile!');
+            return res.json({ success: false, error: 'Your provided email address has no teacher profile!' });
+        }
+  
+        res.json({ success: true, data: updatedTeacher });
+    } catch (error) {
+        console.error('Error updating teacher:', error.message);
+        res.json({ success: false, error: error.message || 'Internal Server Error' });
+    }
+});
+
 // to update courses of a teacher
 app.put("/:teacherCode/courses", async (req, res) => {
     try {
@@ -157,6 +184,34 @@ app.put("/:teacherCode/courses", async (req, res) => {
         res.send({ success: false, error: "Internal Server Error" });
     }
 });
+
+// delete an external teacher by id
+app.delete('/deleteExternalTeacher/:id', async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        // Find the teacher by ID
+        const teacher = await Teacher.findById(id);
+
+        if (!teacher) {
+            return res.json({ success: false, error: "Teacher not found!" });
+        }
+
+        // Check if the teacher's department is "ICE, NSTU"
+        if (teacher.department === "ICE, NSTU") {
+            return res.json({ success: false, error: "Cannot delete a teacher from the ICE department!" });
+        }
+
+        // Delete the teacher
+        await Teacher.findByIdAndDelete(id);
+
+        res.json({ success: true, message: "Teacher deleted successfully!" });
+    } catch (error) {
+        console.error("Error deleting teacher:", error);
+        res.json({ success: false, error: "Internal Server Error" });
+    }
+});
+
 
 
 module.exports = app;

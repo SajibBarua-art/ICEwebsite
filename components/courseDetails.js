@@ -60,13 +60,23 @@ app.get("/", async (req, res) => {
             // Sort the results based on the part of the code after the dash
             results.sort((a, b) => {
                 const aa = a.code.split('-'), bb = b.code.split('-');
-                const lastA = aa[1], lastB = bb[1];
+                let lastA = aa[1], lastB = bb[1];
                 
                 if(aa[0] != bb[0] && a.year === b.year && a.term === b.term) {
                     if(aa[0] === "ICE") return -1;
                     if(bb[0] === "ICE") return 1;
                 }
+
+                if(!lastA || !lastB) {
+                    const yearTermA = `${a.year}${a.term}`;
+                    const yearTermB = `${b.year}${b.term}`;
+
+                    // console.log(yearTermA, " ", yearTermB);
+
+                    return yearTermA.localeCompare(yearTermB);
+                }
                 
+                // console.log("lastA: ", lastA, " lastB: ", lastB, "aa: ", aa, "bb: ", bb);
                 return lastA.localeCompare(lastB);
             });
             res.send({ success: true, data: results });
