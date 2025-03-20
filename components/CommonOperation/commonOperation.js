@@ -26,12 +26,11 @@ const updateDataByIdAndModel = () => async (req, res) => {
     const yearSemester = newData.examYear.toString() + newData.semester.toString();
     newData.yearSemester = yearSemester;
 
-    console.log("update: ", newData);
-
     try {
         const result = await Model.findByIdAndUpdate(_id, newData, { new: true });
 
         if (result) {
+            // console.log("update: ", result.courseDetails[0].teacherCode);
             res.json({ success: true, data: result });
         } else {
             res.json({ success: false, error: 'Data not found!' });
