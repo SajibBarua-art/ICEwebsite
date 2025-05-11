@@ -53,6 +53,7 @@ const TheoryExamRoutineManagement = require('./components/TheoryExamRoutine/theo
 const TheoryExamRoutineOperation = require('./components/TheoryExamRoutine/theoryExamRoutineOperation');
 const TheoryExamRoutine = require('./components/TheoryExamRoutine/theoryExamRoutine');
 const TeacherPriority = require('./components/Priority/TeacherPriority');
+const SlotPriority = require('./components/Priority/SlotPriority');
 
 // Use the routes for data management
 app.use('/teachers', teacherRoutes);
@@ -88,6 +89,7 @@ app.use('/TheoryDutyRoasterManagement', TheoryDutyRoasterManagement);
 app.use('/TheoryExamRoutineManagement', TheoryExamRoutineManagement);
 
 app.use('/priority/teacher', TeacherPriority);
+app.use('/priority/slots', SlotPriority);
 
 app.listen(port, () => {
     console.log(`Example app listening at http://localhost:${port}`)
