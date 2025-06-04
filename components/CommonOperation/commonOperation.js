@@ -20,11 +20,19 @@ const getDataByIdAndModel = () => async (req, res) => {
 
 const updateDataByIdAndModel = () => async (req, res) => {
     const _id = req.params.id, serviceName = req.params.serviceName;
-    const newData = req.body;
+    let newData = req.body;
     const Model = mongoose.model(serviceName);
 
-    const yearSemester = newData.examYear.toString() + newData.semester.toString();
-    newData.yearSemester = yearSemester;
+    console.log(newData);
+
+    let yearSemester = null;
+    if(newData.examYear) {
+        yearSemester = newData.examYear.toString() + newData.semester.toString();
+    } else if(newData.year) {
+        yearSemester = newData.year.toString() + newData.semester.toString();
+    }
+    
+    if(yearSemester) newData.yearSemester = yearSemester;
 
     try {
         const result = await Model.findByIdAndUpdate(_id, newData, { new: true });

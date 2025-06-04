@@ -89,7 +89,7 @@ app.post('/', async (req, res) => {
         // Using findOneAndUpdate to check if the document exists and update it, otherwise insert a new one
         const result = await CourseDistribution.findOneAndUpdate(
             { yearSemester }, // Find by examYear and semester
-            { $set: { courseDetails, totalBatch, sessions, yearSemester } }, // Update fields
+            { $set: { examYear, semester, courseDetails, totalBatch, sessions, yearSemester } }, // Update fields
             { new: true, upsert: true } // Return the updated document and create a new one if not found
         );
 

@@ -57,7 +57,11 @@ app.post("/", async (req, res) => {
 
         // Add based on type
         if (type === "theory") {
-            if (!room.theory.includes(no)) room.theory.push(no);
+            if (room.theory.includes(no)) {
+                return res.status(400).json({ success: false, error: "Your provided classroom No is already included!" });
+            } else {
+                room.theory.push(no);
+            }
         } else if (type.endsWith("lab")) {
             const labType = type.replace(" lab", "");
             if (!room.lab[labType]) room.lab[labType] = [];
@@ -106,13 +110,15 @@ app.delete("/delete/:roomNo", async (req, res) => {
         }
 
         // Remove from lab categories
-        for (const [labType, rooms] of Object.entries(room.lab || {})) {
-            if (rooms.includes(roomNoToDelete)) {
-                room.lab[labType] = rooms.filter(no => no !== roomNoToDelete);
-                found = true;
-
-                // Tell Mongoose the nested object has been modified
-                room.markModified("lab");
+        if(!found) {
+            for (const [labType, rooms] of Object.entries(room.lab || {})) {
+                if (rooms.includes(roomNoToDelete)) {
+                    room.lab[labType] = rooms.filter(no => no !== roomNoToDelete);
+                    found = true;
+    
+                    // Tell Mongoose the nested object has been modified
+                    room.markModified("lab");
+                }
             }
         }
 

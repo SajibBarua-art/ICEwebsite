@@ -56,14 +56,28 @@ app.post("/", async (req, res) => {
     }
 });
 
-app.get("/", async (req, res) => {
+app.get("/data/:year/:semester", async (req, res) => {
+    const { year, semester } = req.params;
+
+    console.log(year, semester);
+
     try {
-        // Retrieve all slots priority list from the MongoDB database
-        const users = await SlotPriority.find({});
-        res.json({ success: true, data: users }); // Send the users as a JSON response
+        // Retrieve slots matching the given year and semester
+        const filteredSlots = await SlotPriority.find({ year: year, semester: semester });
+
+        // Check if any results were found
+        if (filteredSlots.length === 0) {
+            return res.status(404).json({
+                success: false,
+                error: "Year and Semester not found!"
+            });
+        }
+
+        // Return the matched results
+        res.json({ success: true, data: filteredSlots });
     } catch (error) {
-        console.error("An error occurred in slots priority get function:", error);
-        res.send({ success: false, error: "Internal Server Error" });
+        console.error("An error occurred while fetching filtered slot data:", error);
+        res.status(500).json({ success: false, error: "Internal Server Error" });
     }
 });
 

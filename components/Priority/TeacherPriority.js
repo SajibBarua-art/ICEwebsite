@@ -65,6 +65,29 @@ app.get("/", async (req, res) => {
     }
 });
 
+app.get("/data/:year/:semester", async (req, res) => {
+    const { year, semester } = req.params;
+
+    try {
+        // Retrieve slots matching the given year and semester
+        const filteredSlots = await TeacherPriority.find({ year: year, semester: semester });
+
+        // Check if any results were found
+        if (filteredSlots.length === 0) {
+            return res.status(404).json({
+                success: false,
+                error: "Year and Semester not found!"
+            });
+        }
+
+        // Return the matched results
+        res.json({ success: true, data: filteredSlots });
+    } catch (error) {
+        console.error("An error occurred while fetching filtered teacher priority data:", error);
+        res.status(500).json({ success: false, error: "Internal Server Error" });
+    }
+});
+
 // Update a teacher Priority by yearSemester
 app.put('/update/:yearSemester', async (req, res) => {
     const { newData } = req.body;

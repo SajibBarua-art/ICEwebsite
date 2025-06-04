@@ -54,6 +54,7 @@ const TheoryExamRoutineOperation = require('./components/TheoryExamRoutine/theor
 const TheoryExamRoutine = require('./components/TheoryExamRoutine/theoryExamRoutine');
 const TeacherPriority = require('./components/Priority/TeacherPriority');
 const SlotPriority = require('./components/Priority/SlotPriority');
+const PriorityBasedClassRoutine = require('./components/ClassRoutine/priorityBasedClassRoutine');
 
 // Use the routes for data management
 app.use('/teachers', teacherRoutes);
@@ -72,6 +73,7 @@ app.use('/generateExamCommittee', generateExamCommittee.app);
 app.use('/generateLabExamCommittee', generateLabExamCommittee);
 app.use('/generateTheoryDutyRoaster', generateTheoryDutyRoaster);
 app.use('/generateTheoryExamRoutine', TheoryExamRoutine);
+app.use('/generatePriorityBasedClassRoutine', PriorityBasedClassRoutine);
 
 // to temporary manipulate data for pending requests
 app.use('/routine', routineOperation);

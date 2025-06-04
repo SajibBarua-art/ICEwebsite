@@ -32,6 +32,7 @@ app.post('/', async(req, res) => {
 
     try {
         const newService = new PendingService({ id, serviceName, senderName });
+        console.log(id, serviceName, senderName);
         await newService.save();
         res.json({ success: true });
     } catch (err) {

@@ -214,6 +214,8 @@ app.post('/', async (req, res) => {
         // To memorize all the teachers name
         const teachersName = toGetTeachersName(teachersInfo);
 
+        console.log(routineMatrix);
+
         // const data = updateDatabaseRoutine(routineMatrix, yearTerm, teachersName, year, semester, classStartDate);
         const data = {
             overall: routineMatrix,
@@ -231,6 +233,7 @@ app.post('/', async (req, res) => {
     }
 });
 
+// to store the routine
 app.post('/data', async (req, res) => {
     try {
         const { data } = req.body;
@@ -392,7 +395,7 @@ const buildRoutineMatrix = (routineMatrix, roomTimeSlots, coursesDetails, allRoo
         process.exit();
     }
 
-    var slotIndex = 0, cnt = 0;
+    var cnt = 0;
     var isRoomTaken = new Array(10), isTeacherAllocated = new Array(10);
     for (let day = 0; day < 10; day++) {
         isRoomTaken[day] = new Array(10);

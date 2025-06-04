@@ -7,10 +7,12 @@ const postData = (model, temModel) => async (req, res) => {
         const TemModel = mongoose.model(temModel);
         const { id } = req.body; // Destructure the id from the request body
 
+        // console.log("id: ", id);
+
         const data = await TemModel.findById(id).lean(); // Correctly find by id
         delete data._id;
         data.id = id;
-        // console.log("tem: ", data);
+        console.log("tem: ", data);
 
         // Save the current temporary management to the permanent Management Model
         const management = new Model(data);
@@ -54,7 +56,7 @@ const getDataByYearSemester = (model) => async (req, res) => {
         if (result.length !== 0) {
             res.json({ success: true, data: result });
         } else {
-            res.json({ success: false, error: 'Data not found! Your provided year and semester is not registered on the course distribution page!' });
+            res.json({ success: false, error: 'Year and Semester not found!' });
         }
     } catch (error) {
         console.error("An error occurred while retrieving data:", error);
