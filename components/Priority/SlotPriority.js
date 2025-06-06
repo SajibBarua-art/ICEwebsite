@@ -82,15 +82,21 @@ app.get("/data/:year/:semester", async (req, res) => {
 });
 
 // Update a slot Priority by yearSemester
-app.put('/update/:yearSemester', async (req, res) => {
+app.put('/update/:year/:semester', async (req, res) => {
     const { newData } = req.body;
-    const {yearSemester} = req.params;
+    const {year, semester} = req.params;
+
+    if(!year || !semester) {
+        res.json({success:false, error:"Year or Semester format is not correct!"});
+    }
+
+    const yearSemester = year.toString() + semester.toString();
   
     try {
       // Find the slot Priority by year & semester and update
       const updatedSlotPriority = await SlotPriority.findOneAndUpdate(
         { yearSemester },
-        newData,
+        { $set: { slots: newData.slots } },
         { new: true } // Return the updated document
       );
   
@@ -100,7 +106,7 @@ app.put('/update/:yearSemester', async (req, res) => {
   
       res.json({ success: true, data: updatedSlotPriority });
     } catch (error) {
-      console.error('Error updating Teacher Priority:', error);
+      console.error('Error updating Slot Priority:', error);
       res.json({ success: false, error: 'Internal Server Error' });
     }
 });

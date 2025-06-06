@@ -89,10 +89,16 @@ app.get("/data/:year/:semester", async (req, res) => {
 });
 
 // Update a teacher Priority by yearSemester
-app.put('/update/:yearSemester', async (req, res) => {
+app.put('/update/:year/:semester', async (req, res) => {
     const { newData } = req.body;
-    const {yearSemester} = req.params;
-  
+    const {year, semester} = req.params;
+    
+    if(!year || !semester) {
+        res.json({success:false, error:"Year or Semester format is not correct!"});
+    }
+
+    const yearSemester = year.toString() + semester.toString();
+    // console.log(yearSemester, newData);
     try {
       // Find the teacher Priority by year & semester and update
       const updatedTeacherPriority = await TeacherPriority.findOneAndUpdate(
