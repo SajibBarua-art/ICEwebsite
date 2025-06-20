@@ -1,225 +1,118 @@
-const fs = require('fs');
+console.log("buildPriorityRoutineMatrix started");
 
-const createRoutineDatabase = async (routineMatrix) => {
-    try {
-        const newExamComittee = new ExamComittee(routineMatrix);
+    for(let i = 0; i<teacherPriority.length; i++) {
+        const teacherCode = teacherPriority[i];
 
-        await newExamComittee.save();
-        console.log('ExamComittee saved');
-    } catch (err) {
-        console.error('Error saving examComittee:', err);
-    }
-};
+        // Get a mutable copy of the courses for this teacher, as we might pop from it
+        let coursesDetailsForTeacher = teacherCodeToCourseDetails[teacherCode] ? [...teacherCodeToCourseDetails[teacherCode]] : [];
 
-const updateDatabaseExamCommittee = async (newExamComitteeMatrix) => {
-    try {
-        const result = await ExamComittee.findOneAndUpdate(
-            {}, // Match all documents
-            { $set: { newExamComitteeMatrix } },
-            { new: true } // Return the updated document
-        );
+        // Iterate while there are courses for this teacher to process
+        // We process from the end of the list (highest priority if sorted that way, or just LIFO)
+        while (coursesDetailsForTeacher.length > 0) {
+            const courseDetails = coursesDetailsForTeacher[coursesDetailsForTeacher.length - 1]; // Peek at the last course
 
-        if (result) {
-            console.log('ExamComittee updated');
-        } else {
-            console.log('No examComittee document found');
-        }
-    } catch (err) {
-        console.error('Error updating examComittee:', err);
-    }
-};
+            const year = courseDetails.course.year;
+            const term = courseDetails.course.term;
+            const courseCode = courseDetails.course.code;
 
-const buildTeacherCourseObjects = (teachersInfo, coursesInfo) => {
-    const teacherCourseObjects = [];
-    
-    const map1 = new Map();
-    for (const teacher of teachersInfo) {
-        const { courses, ...teacherWithoutCourses } = teacher;
+            console.log(`Teacher ${teacherCode}, Course ${courseCode}, Credits needed: ${courseAllocation[courseCode]}`);
 
-        if(teacher.department !== 'ICE, NSTU') {
-            continue;
-        }
-  
-        for (const courseCode of courses) {
-            const courseDetails = coursesInfo.find((course) => course.code === courseCode);
+            if (courseAllocation[courseCode] <= 0) {
+                coursesDetailsForTeacher.pop(); // This course is already fully allocated, remove from teacher's list and continue
+                continue;
+            }
 
-            if (courseDetails) {
-                if(courseDetails.type !== 'theory') {
+            // Make a copy of this teacher's slot priorities for this specific course attempt,
+            // as we'll be popping from it. This ensures each course for the teacher gets a fresh look at slots.
+            // If you intend for slots to be "consumed" by a teacher across their courses, pop from slotPriority[teacherCode] directly.
+            let currentCourseSlotPriority = slotPriority[teacherCode] ? [...slotPriority[teacherCode]] : [];
+
+            while (courseAllocation[courseCode] > 0) {
+                if (currentCourseSlotPriority.length === 0) {
+                    console.warn(`No more priority slots for teacher ${teacherCode} for course ${courseCode}. Remaining credits: ${courseAllocation[courseCode]}`);
+                    break; // Break from trying to allocate more credits for THIS course (ran out of slots)
+                }
+
+                const dayTimeslot = currentCourseSlotPriority.pop(); // Try the highest priority remaining slot (LIFO)
+                const day = dayTimeslot.day;
+                const timeslot = dayTimeslot.timeslot;
+
+                // --- Corrected Slot Availability Check ---
+                // Skip if:
+                // 1. The specific year/term slot is already taken by ANY class.
+                // 2. The teacher is already busy at this day/timeslot.
+                // 3. The second teacher (if any) is already busy at this day/timeslot.
+                if (routineMatrix[day][year][term][timeslot].isAllocated) {
+                    // console.log(`Slot ${day}-${timeslot} for ${year}-${term} already allocated in routineMatrix.`);
                     continue;
                 }
-                const teacherWithCourseDetails = { teacher: teacherWithoutCourses, course: courseDetails };
-                const teacher2 = teacherWithCourseDetails.teacher;
-                const courseCode = teacherWithCourseDetails.course.code;
-                const ind = teacherCourseObjects.length;
-                if(map1.has(courseCode)) {
-                    const prev_ind = map1.get(courseCode);
-                    teacherCourseObjects[prev_ind]['teacher2'] = teacher2;
+                if (allocatedTeacher[day][timeslot].has(teacherCode)) {
+                    // console.log(`Teacher ${teacherCode} busy at ${day}-${timeslot}.`);
                     continue;
                 }
-
-                map1.set(courseCode, ind);
-                teacherCourseObjects.push(teacherWithCourseDetails);
-            }
-        }
-    }
-    
-    return teacherCourseObjects;
-}
-
-const rearrangeCourses = (allTeacherCourse) => {
-    var yearTermWiseCourse = new Array(7);
-    for (let i = 0; i < 7; i++) {
-        yearTermWiseCourse[i] = new Array(4);
-        for (let j = 0; j < 4; j++) {
-            yearTermWiseCourse[i][j] = [];
-        }
-    }
-
-    for(const teacherCourse of allTeacherCourse) {
-        const course = teacherCourse.course;
-        const year = course.year, term = course.term;
-        yearTermWiseCourse[year][term].push(teacherCourse);
-    }
-
-    for(let i = 1; i <= 4; i++) {
-        yearTermWiseCourse[i][1].sort((a, b) => a.course.code.localeCompare(b.course.code));
-        yearTermWiseCourse[i][2].sort((a, b) => a.course.code.localeCompare(b.course.code));
-    }
-
-    return yearTermWiseCourse;
-}
-
-
-const buildExamCommittee = (teacherCourseDetails, teachersInfoSortedByCourses, teachersInfoSortedByJoiningDate) => {
-    const len = teacherCourseDetails.length;
-    const examCommittee = new Array(len);
-    for(let i = 0; i < len; i++) {
-        examCommittee[i] = new Array(4);
-    }
-
-    let takenTeachers = new Array(len);
-    for(let i = 0; i < len; i++) {
-        takenTeachers[i] = new Set();
-    }
-
-    // to 1st examiner
-    for(let i = 0; i < len; i++) {
-        const teacher = teacherCourseDetails[i].teacher;
-        const course = teacherCourseDetails[i].course;
-        const name = teacher.firstName + ' ' + teacher.lastName;
-        const teacherCode = teacher.teacherCode;
-
-        takenTeachers[i].add(teacherCode);
-        examCommittee[i][0] = {
-            course: {
-                name: course.name,
-                code: course.code,
-                year: course.year,
-                term: course.term
-            },
-            teacher: {
-                name: name,
-                designation: teacher.designation,
-                department: teacher.department,
-                remark: '1st Examiner'
-            }
-        }
-    }
-
-    // to 2nd examiner
-    for(let i = 0; i < len; i++) {
-        let teacher;
-        if(teacherCourseDetails[i].hasOwnProperty('teacher2')) {
-            teacher = teacherCourseDetails[i].teacher2;
-        }
-        else {
-            let teacherInd = 0;
-            teacher = teachersInfoSortedByCourses[teacherInd];
-            while(takenTeachers[i].has(teacher.teacherCode)) {
-                teacherInd++;
-                if(teacherInd === teachersInfoSortedByCourses.length) {
-                    teacherInd = 0;
+                if (courseDetails.teacher2 && allocatedTeacher[day][timeslot].has(courseDetails.teacher2.teacherCode)) {
+                    // console.log(`Teacher2 ${courseDetails.teacher2.teacherCode} busy at ${day}-${timeslot}.`);
+                    continue;
                 }
-                teacher = teachersInfoSortedByCourses[teacherInd];
+                // --- End Corrected Slot Availability Check ---
+
+                let roomInd = undefined;
+                for (let r = 0; r < rooms.length; r++) {
+                    if (!allocatedRoom[day][timeslot].has(r)) { // Check if room index r is available
+                        roomInd = r;
+                        break;
+                    }
+                }
+
+                if (roomInd === undefined) {
+                    // console.log(`No available room at ${day}-${timeslot} for course ${courseCode}.`);
+                    continue; // No room found for this slot, try next slot
+                }
+
+                // If we reach here, slot and room are available
+                console.log(`Allocating ${courseCode} to ${teacherCode} at ${day}-${timeslot} in room ${rooms[roomInd].name}`);
+                routineMatrix[day][year][term][timeslot] = {
+                    isAllocated: true,
+                    ...courseDetails, // Spread course details (course object, teacher objects etc.)
+                    room: rooms[roomInd]
+                };
+
+                allocatedRoom[day][timeslot].add(roomInd);
+                allocatedTeacher[day][timeslot].add(teacherCode);
+                if (courseDetails.teacher2) { // Check if teacher2 exists
+                    allocatedTeacher[day][timeslot].add(courseDetails.teacher2.teacherCode);
+                }
+                // Redundant if teacherCode is already courseDetails.teacher.teacherCode
+                // if (courseDetails.teacher && courseDetails.teacher.teacherCode !== teacherCode) {
+                //     allocatedTeacher[day][timeslot].add(courseDetails.teacher.teacherCode);
+                // }
+
+
+                courseAllocation[courseCode]--;
+                console.log(`Course ${courseCode} credits remaining: ${courseAllocation[courseCode]}`);
+
+                // IMPORTANT: Since one credit is allocated, we break from the slot search loop for THIS credit.
+                // The outer `while (courseAllocation[courseCode] > 0)` will then re-evaluate.
+                // If you want to fill multiple credits of the SAME course in DIFFERENT preferred slots in one go,
+                // you would not break here, but then the logic for currentCourseSlotPriority.pop() needs care.
+                // For typical 1-hour-per-slot allocation, this break is correct.
+                // You found a slot for *one* credit hour. Now look for another slot for the *next* credit hour.
+                // break; // Remove this break if one course can take multiple subsequent priority slots sequentially in one go (less common)
+            } // End while (courseAllocation[courseCode] > 0) for current course
+
+            // After attempting to allocate all credits for the current courseDetails (or running out of slots for it):
+            // Remove this courseDetails from the teacher's list for this pass.
+            // This ensures we move to the next course for the teacher, preventing an infinite loop
+            // if a course cannot be fully allocated due to slot/room constraints.
+            coursesDetailsForTeacher.pop();
+
+            if (courseAllocation[courseCode] === 0) {
+                courseFullyAllocatedInThisPass = true; // Not strictly needed with pop, but good for clarity
+                console.log(`Course ${courseCode} fully allocated.`);
             }
-            teachersInfoSortedByCourses.push(teachersInfoSortedByCourses[teacherInd]);
-            teachersInfoSortedByCourses.splice(teacherInd, 1);
-        }
 
-        takenTeachers[i].add(teacher.teacherCode);
-        const name = teacher.firstName + ' ' + teacher.lastName;
-        examCommittee[i][1] = {
-            teacher: {
-                name: name,
-                designation: teacher.designation,
-                department: teacher.department,
-                remark: '2nd Examiner'
-            }
-        }
-    }
+        } // End while (coursesDetailsForTeacher.length > 0)
+    } // End for (const teacherCode of teacherPriority)
 
-    // to 3rd and 4th examiner
-    for(let i = 0; i < 2*len; i++) {
-        let teacherInd = 0;
-        let teacher = teachersInfoSortedByJoiningDate[teacherInd];
-        while(takenTeachers[i%len].has(teacher.teacherCode)) {
-            teacherInd++;
-            if(teacherInd === teachersInfoSortedByJoiningDate.length) {
-                teacherInd = 0;
-            }
-            teacher = teachersInfoSortedByJoiningDate[teacherInd];
-        }
-        teachersInfoSortedByJoiningDate.push(teachersInfoSortedByJoiningDate[teacherInd]);
-        teachersInfoSortedByJoiningDate.splice(teacherInd, 1);
-        takenTeachers[i%len].add(teacher.teacherCode);
-
-        const name = teacher.firstName + ' ' + teacher.lastName;
-        examCommittee[i%len][2 + (i >= len)] = {
-            teacher: {
-                name: name,
-                designation: teacher.designation,
-                department: teacher.department,
-                remark: (i < len) ? '3rd Examiner': '4th Examiner'
-            }
-        }
-    }
-
-    return examCommittee;
-}
-
-// Generate a random examComittee route
-const generateExamCommittee = () => {
-    const teachersInfoString = fs.readFileSync('./database/teachersInfoString.json', 'utf-8');
-    const coursesInfoString = fs.readFileSync('./database/courseInfoString.json', 'utf-8');
-
-    const teachersInfo = JSON.parse(teachersInfoString);
-    const coursesInfo = JSON.parse(coursesInfoString);
-
-    const allTeacherCourse = buildTeacherCourseObjects(teachersInfo, coursesInfo);
-    const yearTermWiseCourse = rearrangeCourses(allTeacherCourse);
-    const teachersInfoSortedByCourses = teachersInfo, teachersInfoSortedByJoiningDate = teachersInfo;
-    teachersInfoSortedByCourses.sort((a, b) => b.courses.length - a.courses.length);
-    teachersInfoSortedByJoiningDate.sort((a, b) => new Date(a.joiningDate) - new Date(b.joiningDate));
-
-    const sortedCourses = [];
-    for(let i = 4; i > 0; i--) {
-        sortedCourses.push(...yearTermWiseCourse[i][1]);
-        sortedCourses.push(...yearTermWiseCourse[i][2]);
-    }
-    
-    const examCommittee = buildExamCommittee(sortedCourses, teachersInfoSortedByCourses, teachersInfoSortedByJoiningDate);
-    let yearTermWiseExamCommittee = new Array(7);
-    for(let i = 0; i < 7; i++) {
-        yearTermWiseExamCommittee[i] = new Array(4);
-        for(let j = 0; j < 4; j++) {
-            yearTermWiseExamCommittee[i][j] = [];
-        }
-    }
-
-    for(let i = 0; i < examCommittee.length; i++) {
-        const year = examCommittee[i][0].course.year, term = examCommittee[i][0].course.term;
-        yearTermWiseExamCommittee[year][term].push(examCommittee[i]);
-    }
-};
-
-generateExamCommittee();
+    console.log("buildPriorityRoutineMatrix ended");
+    return routineMatrix; // Good practice to return the modified matrix

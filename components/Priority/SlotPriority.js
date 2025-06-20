@@ -16,16 +16,17 @@ const slotPrioritySchema = new mongoose.Schema({
         required: true,
         unique: true
     },
-    slots: Object
+    slots: Object,
+    teachers: [{ type: String }]
 });
 
 const SlotPriority = mongoose.model('slotPriority', slotPrioritySchema);
  
 app.post("/", async (req, res) => {
     try {
-        const { year, semester, yearSemester, slots } = req.body;
+        const { year, semester, yearSemester, slots, teachers } = req.body;
 
-        // console.log(year, semester, yearSemester, slots);
+        // console.log(year, semester, yearSemester, slots, teachers);
 
         if(!year) {
             return res.send({success: false, error: "Year field cannot be empty!"});
@@ -45,7 +46,7 @@ app.post("/", async (req, res) => {
             return res.send({ success: false, error: "Your given Year and Semester is already in used!" });
         }
 
-        const slotPriority = new SlotPriority({ year, semester, yearSemester, slots });
+        const slotPriority = new SlotPriority({ year, semester, yearSemester, slots, teachers });
 
         let result = await slotPriority.save();
         res.send({ success: true, data: result });
@@ -59,7 +60,7 @@ app.post("/", async (req, res) => {
 app.get("/data/:year/:semester", async (req, res) => {
     const { year, semester } = req.params;
 
-    console.log(year, semester);
+    // console.log(year, semester);
 
     try {
         // Retrieve slots matching the given year and semester
@@ -96,7 +97,7 @@ app.put('/update/:year/:semester', async (req, res) => {
       // Find the slot Priority by year & semester and update
       const updatedSlotPriority = await SlotPriority.findOneAndUpdate(
         { yearSemester },
-        { $set: { slots: newData.slots } },
+        newData,
         { new: true } // Return the updated document
       );
   

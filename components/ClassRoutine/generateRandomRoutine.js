@@ -187,7 +187,7 @@ app.post('/', async (req, res) => {
         }
 
         // To handle electrical lab
-        var indexIncrement = 0;
+        var indexIncrement = 0; // room index
         const electricalRoomTimeSlots = divideBySlots(electricalRoom, timeSlots, totalDay, true, indexIncrement);
         buildRoutineMatrix(routineMatrix, electricalRoomTimeSlots, electricalLabDetails, allRoom);
         
@@ -391,7 +391,7 @@ const buildYearTermMatrix = (coursesDetails) => {
 
 const buildRoutineMatrix = (routineMatrix, roomTimeSlots, coursesDetails, allRoom) => {
     if (coursesDetails.length > roomTimeSlots.length) {
-        console.log("!!! Error, roomTimeSlots is less than coursesDetails !!!");
+        console.log("!!! Error, Room Time Slots is less than coursesDetails !!!");
         process.exit();
     }
 
@@ -413,7 +413,7 @@ const buildRoutineMatrix = (routineMatrix, roomTimeSlots, coursesDetails, allRoo
     for (const courseDetails of coursesDetails) {
         const year = courseDetails.course.year;
         const term = courseDetails.course.term;
-        const credit = courseDetails.course.credit;
+        const credit = Math.ceil(parseFloat(courseDetails.course.credit));
         
         if(courseDetails['teacher'] === undefined) {
             console.log(courseDetails);
@@ -473,5 +473,8 @@ const buildRoutineMatrix = (routineMatrix, roomTimeSlots, coursesDetails, allRoo
 
 module.exports = {
     app,
-    shuffleArray
+    shuffleArray,
+    buildTeacherCourse,
+    toGetTeachersName,
+    buildYearTermMatrix
 };
