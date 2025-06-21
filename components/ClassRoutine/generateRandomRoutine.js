@@ -409,7 +409,7 @@ const buildRoutineMatrix = (routineMatrix, roomTimeSlots, coursesDetails, allRoo
         }
     }
 
-    var slotIndex = 0, cnt = 0;
+    var slotIndex = 0; cnt = 0;
     for (const courseDetails of coursesDetails) {
         const year = courseDetails.course.year;
         const term = courseDetails.course.term;
@@ -476,5 +476,7 @@ module.exports = {
     shuffleArray,
     buildTeacherCourse,
     toGetTeachersName,
-    buildYearTermMatrix
+    buildYearTermMatrix,
+    extraSlots,
+    breakIntoSingleSlot
 };
