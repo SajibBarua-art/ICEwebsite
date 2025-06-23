@@ -147,7 +147,7 @@ app.post('/', async(req, res) => {
         // To handle Teacher Slots Priority
         let allocatedRoom = buildRoomAllocationMatrix(totalDay, timeSlots);
         let allocatedTeacher = buildTeacherAllocationMatrix(totalDay, timeSlots);
-        let allocatedCourse = buildAllocatedCourse(totalDay);
+        let dayWiseAllocatedCourse = buildAllocatedCourse(totalDay);
         const teacherPriorityMapped = buildTeacherPriorityMapped(teacherPriority);
         const slotPriorityReverse = convertSlotPriorityReverse(slotPriority);
         let unallocatedSlots = buildAllSlots(teacherPriority, slotPriority, consecutiveSlotsCount, totalDay, totalTimeslot);
@@ -162,7 +162,7 @@ app.post('/', async(req, res) => {
                 }
             }
         }
-        // console.log("c3: ", allocatedCourse);
+        // console.log("c3: ", dayWiseAllocatedCourse);
 
         // --------------------------------start-------------------------------------------------------
         // To handle Teacher Slots Priority
@@ -171,38 +171,45 @@ app.post('/', async(req, res) => {
         let courseAllocationElectrical = buildCourseAllocationMatrix(electricalLabDetails);
         let teacherCodeToCourseDetailsElectricals = buildTeacherCodeToCourseDetails(electricalLabDetails, teacherPriorityMapped);
         unallocatedSlots = buildPriorityRoutineMatrix(routineMatrix, electricalRoom, teacherCodeToCourseDetailsElectricals, 
-            teacherPriority, unallocatedSlots, allocatedRoom, allocatedTeacher, allocatedCourse,
+            teacherPriority, unallocatedSlots, allocatedRoom, allocatedTeacher, dayWiseAllocatedCourse,
              courseAllocationElectrical, totalTimeslot, lunchHourIdx, allocatedRoomTimeslot, indexIncrement);
 
         // To handle computer lab
         indexIncrement = electricalRoom.length;
         let courseAllocationComputer = buildCourseAllocationMatrix(computerLabDetails);
         let teacherCodeToCourseDetailsComputer = buildTeacherCodeToCourseDetails(computerLabDetails, teacherPriorityMapped);
-        buildPriorityRoutineMatrix(routineMatrix, computerRoom, teacherCodeToCourseDetailsComputer, 
-            teacherPriority, unallocatedSlots, allocatedRoom, allocatedTeacher, allocatedCourse,
+        unallocatedSlots = buildPriorityRoutineMatrix(routineMatrix, computerRoom, teacherCodeToCourseDetailsComputer, 
+            teacherPriority, unallocatedSlots, allocatedRoom, allocatedTeacher, dayWiseAllocatedCourse,
              courseAllocationComputer, totalTimeslot, lunchHourIdx, allocatedRoomTimeslot, indexIncrement);
 
         // To handle theory courses
         indexIncrement = electricalRoom.length + computerRoom.length;
-        let courseAllocationTheory = buildCourseAllocationMatrix(theoryDetails);indexIncrement
+        let courseAllocationTheory = buildCourseAllocationMatrix(theoryDetails);
         let teacherCodeToCourseDetailsTheory = buildTeacherCodeToCourseDetails(theoryDetails, teacherPriorityMapped);
-        buildPriorityRoutineMatrix(routineMatrix, theoryRoom, teacherCodeToCourseDetailsTheory, 
-            teacherPriority, unallocatedSlots, allocatedRoom, allocatedTeacher, allocatedCourse, 
+        unallocatedSlots = buildPriorityRoutineMatrix(routineMatrix, theoryRoom, teacherCodeToCourseDetailsTheory, 
+            teacherPriority, unallocatedSlots, allocatedRoom, allocatedTeacher, dayWiseAllocatedCourse, 
             courseAllocationTheory, totalTimeslot, lunchHourIdx, allocatedRoomTimeslot, indexIncrement);
         // --------------------------------end-----------------------------------------------------------
+
+        // console.log("unallocatedSlots: ", unallocatedSlots);
+        // console.log("courseAllocationElectrical: ", courseAllocationElectrical);
+        // console.log("courseAllocationComputer: ", courseAllocationComputer);
+        // console.log("courseAllocationTheory: ", courseAllocationTheory);
         
         //---------------------------------start----------------------------------------------------------
         // To handle random slots allocation
         // To handle electrical lab
         indexIncrement = 0;
         const electricalRoomTimeSlots = divideBySlots(electricalRoom, timeSlots, totalDay, true, indexIncrement, allocatedRoomTimeslot, false, []);
-        buildRandomRoutineMatrix(routineMatrix, electricalRoomTimeSlots, electricalLabDetails, allRoom, allocatedRoom, allocatedTeacher, allocatedCourse);
+        buildRandomRoutineMatrix(routineMatrix, electricalRoomTimeSlots, electricalLabDetails, allRoom, 
+            allocatedRoom, allocatedTeacher, courseAllocationElectrical, dayWiseAllocatedCourse);
 
         // To handle computer lab
         indexIncrement = electricalRoom.length;
         let computerAvoidedSlots = [];
         const computerRoomTimeSlots = divideBySlots(computerRoom, timeSlots, totalDay, true, indexIncrement, allocatedRoomTimeslot, true, computerAvoidedSlots);
-        buildRandomRoutineMatrix(routineMatrix, computerRoomTimeSlots, computerLabDetails, allRoom, allocatedRoom, allocatedTeacher, allocatedCourse);
+        buildRandomRoutineMatrix(routineMatrix, computerRoomTimeSlots, computerLabDetails, allRoom, 
+            allocatedRoom, allocatedTeacher, courseAllocationComputer, dayWiseAllocatedCourse);
         const extraComputerLabSlots = extraSlots(computerRoom, totalDay, indexIncrement);
         
         // To handle theory courses
@@ -210,8 +217,20 @@ app.post('/', async(req, res) => {
         let theoryRoomTimeslots = divideBySlots(computerRoom, timeSlots, totalDay, false, indexIncrement, allocatedRoomTimeslot, false, []);
         theoryRoomTimeslots.push(...computerAvoidedSlots);
         theoryRoomTimeslots.push(...extraComputerLabSlots);
-        buildRandomRoutineMatrix(routineMatrix, theoryRoomTimeslots, theoryDetails, allRoom, allocatedRoom, allocatedTeacher, allocatedCourse)
+        buildRandomRoutineMatrix(routineMatrix, theoryRoomTimeslots, theoryDetails, allRoom, 
+            allocatedRoom, allocatedTeacher, courseAllocationTheory, dayWiseAllocatedCourse)
         // --------------------------------end-----------------------------------------------------------
+
+        // console.log("electricalRoomTimeSlots: ", electricalRoomTimeSlots.length);
+        // console.log("electricalLabDetails: ", electricalLabDetails.length);
+        
+        // console.log("computerRoomTimeSlots: ", computerRoomTimeSlots.length);
+        // console.log("computerLabDetails: ", computerLabDetails.length);
+        
+        // console.log("theoryRoomTimeslots: ", theoryRoomTimeslots.length);
+        // console.log("theoryDetails: ", theoryDetails.length);
+
+
 
         // To memorize all the year-term
         const yearTerm = buildYearTermMatrix(theoryDetails);
@@ -249,19 +268,26 @@ const divideBySlots = (rooms, timeslots, totalDay, isLab, indexIncrement, alloca
                             dayInd: day
                         });
                     }
+                    else if(isComputerLab) {
+                        if(!allocatedRoomTimeslot[roomIndex][slotIndex][day]) {
+                            computerAvoidedSlots.push({
+                                roomInd: indexIncrement + roomIndex,
+                                timeSlotInd: slotIndex,
+                                dayInd: day
+                            });
+                        }
+
+                        if((slotIndex + 1) < timeslots.length && !allocatedRoomTimeslot[roomIndex][slotIndex + 1][day]) {
+                            computerAvoidedSlots.push({
+                                roomInd: indexIncrement + roomIndex,
+                                timeSlotInd: slotIndex + 1,
+                                dayInd: day
+                            });
+                        }
+                    }
                 } else {
                     if(!allocatedRoomTimeslot[roomIndex][slotIndex][day]) {
                         roomTimeSlots.push({
-                            roomInd: indexIncrement + roomIndex,
-                            timeSlotInd: slotIndex,
-                            dayInd: day
-                        });
-                    }
-                }
-
-                if(isComputerLab) {
-                    if(!allocatedRoomTimeslot[roomIndex][slotIndex][day] && (slotIndex + 1) < timeslots.length && allocatedRoomTimeslot[roomIndex][slotIndex + 1][day]) {
-                        computerAvoidedSlots.push({
                             roomInd: indexIncrement + roomIndex,
                             timeSlotInd: slotIndex,
                             dayInd: day
@@ -272,32 +298,35 @@ const divideBySlots = (rooms, timeslots, totalDay, isLab, indexIncrement, alloca
         }
     }
 
-    console.log("clab: ", isComputerLab);
+    // console.log("clab: ", isComputerLab);
 
-    console.log("computerAvoidedSlots: ", computerAvoidedSlots);
-    console.log("roomTimeSlots: ", roomTimeSlots.length);
+    // console.log("computerAvoidedSlots: ", computerAvoidedSlots);
+    // console.log("roomTimeSlots: ", roomTimeSlots.length);
 
     return roomTimeSlots;
 }
 
 const buildRandomRoutineMatrix = (routineMatrix, roomTimeSlots, coursesDetails, allRoom, 
-    isRoomTaken, isTeacherAllocated, courseAllocation) => {
+    isRoomTaken, isTeacherAllocated, courseAllocation, dayWiseAllocatedCourse) => {
 
     let slotIndex = 0, cnt = 0;
     for (const courseDetails of coursesDetails) {
         const year = courseDetails.course.year;
         const term = courseDetails.course.term;
         const courseCode = courseDetails.course.code;
+        const type = courseDetails.course.type;
         const credit = courseAllocation[courseCode];
         
         if(courseDetails['teacher'] === undefined) {
-            console.log(courseDetails);
+            console.log("undefined course: ", courseDetails);
         }
         let teacherCode = courseDetails.teacher.teacherCode;
         let teacher2Code = '';
         if (courseDetails.hasOwnProperty('teacher2')) {
             teacher2Code = courseDetails.teacher2.teacherCode;
         }
+
+        // console.log(`course: ${courseCode}, credit: ${credit}, teacher: ${teacherCode}`);
 
         for (let j = 0; j < credit; j++) {
             let curSlotIndex = slotIndex;
@@ -307,12 +336,12 @@ const buildRandomRoutineMatrix = (routineMatrix, roomTimeSlots, coursesDetails, 
 
             while (routineMatrix[day][year][term][timeSlot].isAllocated ||
                 isRoomTaken[day][timeSlot].has(allRoom[roomInd]) ||
-                courseAllocation[day].has(courseCode) ||
+                dayWiseAllocatedCourse[day].has(courseCode) ||
                 isTeacherAllocated[day][timeSlot].has(teacherCode) ||
                 (teacher2Code !== '' && isTeacherAllocated[day][timeSlot].has(teacher2Code))) {
                 curSlotIndex++;
                 if (curSlotIndex === roomTimeSlots.length) {
-                    console.log('Not enough room slots!',);
+                    res.send({ success: false, error: `Not enough slots for ${type} room! Please add a ${type} room.` });
                     process.exit();
                 }
                 day = roomTimeSlots[curSlotIndex].dayInd;
@@ -320,8 +349,10 @@ const buildRandomRoutineMatrix = (routineMatrix, roomTimeSlots, coursesDetails, 
                 roomInd = roomTimeSlots[curSlotIndex].roomInd;
             }
 
+            // console.log(`Allocating course: ${courseCode}, credit: ${credit}, teacher: ${teacherCode} at day: ${day}, timeSlot: ${timeSlot}, roomInd: ${roomInd}`);
+
             isRoomTaken[day][timeSlot].add(allRoom[roomInd]);
-            courseAllocation[day].add(courseCode);
+            dayWiseAllocatedCourse[day].add(courseCode);
             isTeacherAllocated[day][timeSlot].add(teacherCode);
             if (teacher2Code !== '') {
                 isTeacherAllocated[day][timeSlot].add(teacher2Code);
@@ -349,16 +380,16 @@ const buildRandomRoutineMatrix = (routineMatrix, roomTimeSlots, coursesDetails, 
 }
 
 const buildAllocatedCourse = (days) => {
-    let allocatedCourse = new Array(days);
+    let dayWiseAllocatedCourse = new Array(days);
     for(let i = 0; i < days; i++) {
-        allocatedCourse[i] = new Set();
+        dayWiseAllocatedCourse[i] = new Set();
     }
 
-    return allocatedCourse;
+    return dayWiseAllocatedCourse;
 }
 
 const buildTeacherAllocationMatrix = (days, timeSlots) => {
-    console.log("buildTeacherAllocationMatrix started");
+    // console.log("buildTeacherAllocationMatrix started");
 
     let isTeacherAllocated = new Array(days);
     for(let day = 0; day < days; day++) {
@@ -368,13 +399,13 @@ const buildTeacherAllocationMatrix = (days, timeSlots) => {
         }
     }
 
-    console.log("buildTeacherAllocationMatrix ended");
+    // console.log("buildTeacherAllocationMatrix ended");
 
     return isTeacherAllocated;
 }
 
 const buildRoomAllocationMatrix = (totalDay, timeSlots) => {
-    console.log("buildRoomAllocationMatrix started");
+    // console.log("buildRoomAllocationMatrix started");
 
     let roomMatrix = new Array(totalDay);
     for (let day = 0; day < totalDay; day++) {
@@ -386,7 +417,7 @@ const buildRoomAllocationMatrix = (totalDay, timeSlots) => {
 
     // console.log(roomMatrix);
 
-    console.log("buildRoomAllocationMatrix ended");
+    // console.log("buildRoomAllocationMatrix ended");
 
     return roomMatrix;
 }
@@ -460,7 +491,7 @@ const buildAllSlots = (teacherPriority, slotPriority, consecutiveSlotsCount, tot
 }
 
 const checkAvailability = (day, year, term, timeslot, roomInd, routineMatrix, allocatedRoom, 
-    allocatedTeacher, allocatedCourse, currentCourse, teacherCode, courseCode) => {
+    allocatedTeacher, dayWiseAllocatedCourse, currentCourse, teacherCode, courseCode) => {
     // console.log("day: ", day, "timeslot: ", timeslot);
 
     if(routineMatrix[day][year][term][timeslot].isAllocated) {
@@ -473,7 +504,7 @@ const checkAvailability = (day, year, term, timeslot, roomInd, routineMatrix, al
         return false;
     }
 
-    if(allocatedCourse[day].has(courseCode)) {
+    if(dayWiseAllocatedCourse[day].has(courseCode)) {
         return false;
     }
 
@@ -494,7 +525,7 @@ const checkAvailability = (day, year, term, timeslot, roomInd, routineMatrix, al
     return true;
 }
 
-const setSlot = (routineMatrix, allocatedRoom, allocatedTeacher, allocatedCourse,
+const setSlot = (routineMatrix, allocatedRoom, allocatedTeacher, dayWiseAllocatedCourse,
     currentCourse, courseDetailsIdx, teacherCodeToCourseDetailsIdx,
     courseAllocation, day, year, term, timeslot,
     rooms, roomInd, teacherCode, coursesDetails, courseCode, allocatedRoomTimeslot, indexIncrement
@@ -512,7 +543,7 @@ const setSlot = (routineMatrix, allocatedRoom, allocatedTeacher, allocatedCourse
     if(currentCourse.teacher2) {
         allocatedTeacher[day][timeslot].add(currentCourse.teacher2.teacherCode);
     }
-    allocatedCourse[day].add(courseCode);
+    dayWiseAllocatedCourse[day].add(courseCode);
 
     let nextCourseDetailsIdx = courseDetailsIdx + 1;
     if(coursesDetails.length <= nextCourseDetailsIdx) {
@@ -523,10 +554,10 @@ const setSlot = (routineMatrix, allocatedRoom, allocatedTeacher, allocatedCourse
 }
 
 const buildPriorityRoutineMatrix = (routineMatrix, rooms, teacherCodeToCourseDetails, teacherPriority, 
-    allSlots, allocatedRoom, allocatedTeacher, allocatedCourse,
+    allSlots, allocatedRoom, allocatedTeacher, dayWiseAllocatedCourse,
     courseAllocation, totalTimeslot, lunchHourIdx, allocatedRoomTimeslot, indexIncrement) => {
     
-    // console.log("c2: ", allocatedCourse);
+    // console.log("c2: ", dayWiseAllocatedCourse);
     
     let teacherCodeToCourseDetailsIdx = {};
     for(const teacherCode of teacherPriority) {
@@ -571,7 +602,7 @@ const buildPriorityRoutineMatrix = (routineMatrix, rooms, teacherCodeToCourseDet
             continue;
         }
 
-        if(allocatedCourse[day].has(courseCode)) {
+        if(dayWiseAllocatedCourse[day].has(courseCode)) {
             unallocatedSlots.push(slot);
             continue;
         }
@@ -590,7 +621,7 @@ const buildPriorityRoutineMatrix = (routineMatrix, rooms, teacherCodeToCourseDet
 
         if (roomInd === undefined) {
             unallocatedSlots.push(slot);
-            // console.log(`No available room at ${day}-${timeslot} for course ${courseCode}.`);
+            console.log(`No available room at ${day}-${timeslot} for course ${courseCode}.`);
             continue; // No room found for this slot, try next slot
         }
 
@@ -606,10 +637,10 @@ const buildPriorityRoutineMatrix = (routineMatrix, rooms, teacherCodeToCourseDet
             // otherwise leave the slot
             if(timeslot%2 === 1 && nextTimeslot < totalTimeslot && timeslot + 1 !== lunchHourIdx &&
                 checkAvailability(day, year, term, nextTimeslot, roomInd,
-                    routineMatrix, allocatedRoom, allocatedTeacher, allocatedCourse, currentCourse, teacherCode, courseCode
+                    routineMatrix, allocatedRoom, allocatedTeacher, dayWiseAllocatedCourse, currentCourse, teacherCode, courseCode
                 )
             ) {
-                setSlot(routineMatrix, allocatedRoom, allocatedTeacher, allocatedCourse,
+                setSlot(routineMatrix, allocatedRoom, allocatedTeacher, dayWiseAllocatedCourse,
                     currentCourse, courseDetailsIdx, teacherCodeToCourseDetailsIdx,
                     courseAllocation, day, year, term, nextTimeslot,
                     rooms, roomInd, teacherCode, coursesDetails, courseCode, allocatedRoomTimeslot, indexIncrement
@@ -617,10 +648,10 @@ const buildPriorityRoutineMatrix = (routineMatrix, rooms, teacherCodeToCourseDet
             }
             else if(timeslot%2 === 0 && prevTimeslot >= 0 && timeslot !== lunchHourIdx &&
                 checkAvailability(day, year, term, prevTimeslot, roomInd,
-                    routineMatrix, allocatedRoom, allocatedTeacher, allocatedCourse, currentCourse, teacherCode, courseCode
+                    routineMatrix, allocatedRoom, allocatedTeacher, dayWiseAllocatedCourse, currentCourse, teacherCode, courseCode
                 )
             ) {
-                setSlot(routineMatrix, allocatedRoom, allocatedTeacher, allocatedCourse,
+                setSlot(routineMatrix, allocatedRoom, allocatedTeacher, dayWiseAllocatedCourse,
                     currentCourse, courseDetailsIdx, teacherCodeToCourseDetailsIdx,
                     courseAllocation, day, year, term, prevTimeslot,
                     rooms, roomInd, teacherCode, coursesDetails, courseCode, allocatedRoomTimeslot, indexIncrement
@@ -628,12 +659,12 @@ const buildPriorityRoutineMatrix = (routineMatrix, rooms, teacherCodeToCourseDet
             }
             else if(prevTimeslot >= 0 && timeslot !== lunchHourIdx && 
                 checkAvailability(day, year, term, prevTimeslot, roomInd,
-                    routineMatrix, allocatedRoom, allocatedTeacher, allocatedCourse, currentCourse, teacherCode, courseCode
+                    routineMatrix, allocatedRoom, allocatedTeacher, dayWiseAllocatedCourse, currentCourse, teacherCode, courseCode
                 )) {
 
                     // console.log("slots allocating for: ", prevTimeslot);
 
-                    setSlot(routineMatrix, allocatedRoom, allocatedTeacher, allocatedCourse,
+                    setSlot(routineMatrix, allocatedRoom, allocatedTeacher, dayWiseAllocatedCourse,
                         currentCourse, courseDetailsIdx, teacherCodeToCourseDetailsIdx,
                         courseAllocation, day, year, term, prevTimeslot,
                         rooms, roomInd, teacherCode, coursesDetails, courseCode, allocatedRoomTimeslot, indexIncrement
@@ -641,10 +672,10 @@ const buildPriorityRoutineMatrix = (routineMatrix, rooms, teacherCodeToCourseDet
             } 
             else if(nextTimeslot < totalTimeslot && timeslot + 1 !== lunchHourIdx &&
                 checkAvailability(day, year, term, nextTimeslot, roomInd,
-                    routineMatrix, allocatedRoom, allocatedTeacher, allocatedCourse, currentCourse, teacherCode, courseCode
+                    routineMatrix, allocatedRoom, allocatedTeacher, dayWiseAllocatedCourse, currentCourse, teacherCode, courseCode
                 )) {
 
-                    setSlot(routineMatrix, allocatedRoom, allocatedTeacher, allocatedCourse,
+                    setSlot(routineMatrix, allocatedRoom, allocatedTeacher, dayWiseAllocatedCourse,
                         currentCourse, courseDetailsIdx, teacherCodeToCourseDetailsIdx,
                         courseAllocation, day, year, term, nextTimeslot,
                         rooms, roomInd, teacherCode, coursesDetails, courseCode, allocatedRoomTimeslot, indexIncrement
@@ -656,7 +687,7 @@ const buildPriorityRoutineMatrix = (routineMatrix, rooms, teacherCodeToCourseDet
             }
         }
 
-        setSlot(routineMatrix, allocatedRoom, allocatedTeacher, allocatedCourse,
+        setSlot(routineMatrix, allocatedRoom, allocatedTeacher, dayWiseAllocatedCourse,
             currentCourse, courseDetailsIdx, teacherCodeToCourseDetailsIdx,
             courseAllocation, day, year, term, timeslot,
             rooms, roomInd, teacherCode, coursesDetails, courseCode, allocatedRoomTimeslot, indexIncrement
