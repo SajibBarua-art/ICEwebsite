@@ -50,21 +50,21 @@ const createDutyRoaster = async (newDutyRoasterMatrix, teacherWithCourses, getYe
             semester: getSemester
         });
 
-        console.log(newDutyRoaster);
+        // console.log(newDutyRoaster);
 
         // Save the new Duty Roaster
         const savedDutyRoaster = await newDutyRoaster.save();
-        console.log('TheoryDutyRoaster saved');
+        // console.log('TheoryDutyRoaster saved');
 
         // Check if the total number of objects exceeds 10
         const countDatabase = await TheoryDutyRoaster.countDocuments();
-        console.log("Document count: ", countDatabase);
+        // console.log("Document count: ", countDatabase);
 
         if (countDatabase > 10) {
             // Find and delete the oldest Duty Roaster based on the createdAt
             const oldestExamCommittee = await TheoryDutyRoaster.findOne();
             await TheoryDutyRoaster.findByIdAndDelete(oldestExamCommittee._id);
-            console.log('Oldest Duty Roaster deleted');
+            // console.log('Oldest Duty Roaster deleted');
         }
 
         return savedDutyRoaster;
@@ -263,7 +263,7 @@ app.post('/', async (req, res) => {
         const { examYear, semester } = req.body;
         const yearSemester = examYear.toString() + semester.toString();
 
-        console.log(yearSemester);
+        // console.log(yearSemester);
 
         // Retrieve all teachers info from the MongoDB database
         const CourseDistributionManagement = mongoose.model('CourseDistributionManagement');

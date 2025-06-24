@@ -93,7 +93,7 @@ app.post('/', async (req, res) => {
             { new: true, upsert: true } // Return the updated document and create a new one if not found
         );
 
-        console.log(result);
+        // console.log(result);
 
         res.json({ success: true, data: result });
     } catch (error) {
@@ -124,7 +124,7 @@ app.get('/update/:year/:semester', async (req, res) => {
 
         const yearSemester = year.toString() + semester.toString();
 
-        console.log("year: ", year, " semester: ", semester, " ", yearSemester);
+        // console.log("year: ", year, " semester: ", semester, " ", yearSemester);
 
         // Query the database using examYear and semester
         const result = await CourseDistribution.findOne({ yearSemester });

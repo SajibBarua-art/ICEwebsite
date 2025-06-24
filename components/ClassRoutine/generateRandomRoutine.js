@@ -56,22 +56,22 @@ const createRoutineDatabase = async (routineMatrix, yearTerm, teachersName, getY
             routineDetails: getRoutineDetails
         });
 
-        console.log(getYear, getSemester);
+        // console.log(getYear, getSemester);
 
         // Check if the total number of objects exceeds 10
         const routineCount = await Routine.countDocuments();
-        console.log("Document count: ", routineCount);
+        // console.log("Document count: ", routineCount);
 
         if (routineCount > 10) {
             // Find and delete the oldest routine based on the classStartDate
             const oldestRoutine = await Routine.findOne();
             await Routine.findByIdAndDelete(oldestRoutine._id);
-            console.log('Oldest routine deleted');
+            // console.log('Oldest routine deleted');
         }
 
         // Save the new routine
         const savedRoutine = await newRoutine.save();
-        console.log('Routine saved');
+        // console.log('Routine saved');
 
         return savedRoutine;
     } catch (err) {
@@ -98,7 +98,7 @@ const updateDatabaseRoutine = async (newRoutineMatrix, yearTerm, teachersName, g
         );
 
         if (result) {
-            console.log('Routine updated');
+            // console.log('Routine updated');
             return result;
         } else {
             console.log('No routine document found');
@@ -128,7 +128,7 @@ app.post('/', async (req, res) => {
         const CourseDistributionManagement = mongoose.model('CourseDistributionManagement');
         const courseDistributionManagement = await CourseDistributionManagement.find({ yearSemester }).lean();
 
-        console.log(courseDistributionManagement);
+        // console.log(courseDistributionManagement);
         if(courseDistributionManagement.length === 0) {
             res.send({ success: false, error: "No data found on your specific year and semester!!!" });
             return;
@@ -138,8 +138,11 @@ app.post('/', async (req, res) => {
         const timeSlot = await TimeSlot.find({}).lean();
         const room = await Room.find({}).lean();
 
+        const mappedTeachers = buildMappedTeachers(teachersInfo);
+        const mappedCourses = buildMappedCourses(coursesInfo);
+
         // const allTeacherCourse = buildTeacherCourseObjects(teachersInfo, coursesInfo);
-        const allTeacherCourse = buildTeacherCourse(courseDistributionManagement[0], teachersInfo, coursesInfo);
+        const allTeacherCourse = buildTeacherCourse(courseDistributionManagement[0], mappedTeachers, mappedCourses);
         // console.log(allTeacherCourse);
 
         // divide the courses according to the electrical lab, computer lab and theory
@@ -214,7 +217,7 @@ app.post('/', async (req, res) => {
         // To memorize all the teachers name
         const teachersName = toGetTeachersName(teachersInfo);
 
-        console.log(routineMatrix);
+        // console.log(routineMatrix);
 
         // const data = updateDatabaseRoutine(routineMatrix, yearTerm, teachersName, year, semester, classStartDate);
         const data = {
@@ -239,7 +242,7 @@ app.post('/data', async (req, res) => {
         const { data } = req.body;
 
         const result = await createRoutineDatabase(data.overall, data.yearTerm, data.routineTeachersName, data.year, data.semester, data.classStartDate, data.routineDetails);
-        console.log(data);
+        // console.log(data);
         res.json({ success: true, data: result });
     } catch (error) {
         console.error("An error occurred into the save routine:", error);
@@ -278,15 +281,33 @@ const buildTeacherCourseObjects = (teachersInfo, coursesInfo) => {
     return teacherCourseObjects;
 };
 
+const buildMappedCourses = (coursesInfo) => {
+    const mappedCourses = new Map();
+    for (const course of coursesInfo) {
+        mappedCourses.set(course.code, course);
+    }
+    return mappedCourses;
+}
+
+const buildMappedTeachers = (teachersInfo) => {
+    const mappedTeachers = new Map();
+    for (const teacher of teachersInfo) {
+        mappedTeachers.set(teacher.teacherCode, teacher);
+    }
+    return mappedTeachers;
+}
+
 // fetch data from course distributions
-const buildTeacherCourse = (courseDistributionManagement, teachersInfo, coursesInfo) => {
+const buildTeacherCourse = (courseDistributionManagement, mappedTeachers, mappedCourses) => {
     const teacherCourseObjects = [];
 
     const courses = courseDistributionManagement.courseDetails;
 
+    // console.log("Courses: ", courses);
+
     for (let i = 0; i < courses.length; i++) {
         const courseCode = courses[i].courseCode;
-        const courseObj = coursesInfo.find(c => c.code === courseCode);
+        const courseObj = mappedCourses.get(courseCode);
         let teacherCourseObj = { course: courseObj };
 
         // swap the teacher, if 1st one is empty
@@ -299,21 +320,27 @@ const buildTeacherCourse = (courseDistributionManagement, teachersInfo, coursesI
             }
         }
 
+        let teacherAssigned = false;
         for (let j = 0; j < courses[i].teacherCode.length; j++) {
             const teacherCode = courses[i].teacherCode[j];
 
             if (teacherCode !== "") {
-                const teacherObj = teachersInfo.find(t => t.teacherCode === teacherCode);
+                const teacherObj = mappedTeachers.get(teacherCode);
                 if (j == 0) {
+                    teacherAssigned = true
                     teacherCourseObj['teacher'] = teacherObj;
                 } else {
+                    teacherAssigned = true;
                     teacherCourseObj['teacher2'] = teacherObj;
                 }
             }
         }
-        teacherCourseObjects.push(teacherCourseObj);
+        if(teacherAssigned === true) {
+            teacherCourseObjects.push(teacherCourseObj);
+        }
     }
 
+    // console.log("Teacher Course Objects: ", teacherCourseObjects);
     return teacherCourseObjects;
 }
 
@@ -478,5 +505,7 @@ module.exports = {
     toGetTeachersName,
     buildYearTermMatrix,
     extraSlots,
-    breakIntoSingleSlot
+    breakIntoSingleSlot,
+    buildMappedCourses,
+    buildMappedTeachers
 };

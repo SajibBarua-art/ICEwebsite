@@ -23,7 +23,7 @@ const updateDataByIdAndModel = () => async (req, res) => {
     let newData = req.body;
     const Model = mongoose.model(serviceName);
 
-    console.log(newData);
+    // console.log(newData);
 
     let yearSemester = null;
     if(newData.examYear) {

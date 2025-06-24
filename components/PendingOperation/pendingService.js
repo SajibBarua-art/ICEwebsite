@@ -28,7 +28,7 @@ const { getDataByIdAndModel, deleteDataByIdAndModel } = require('../CommonOperat
 // Route to post data
 app.post('/', async(req, res) => {
     const { id, serviceName, senderName } = req.body;
-    console.log(req.body);
+    // console.log(req.body);
 
     try {
         const newService = new PendingService({ id, serviceName, senderName });

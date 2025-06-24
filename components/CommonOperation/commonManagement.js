@@ -12,7 +12,7 @@ const postData = (model, temModel) => async (req, res) => {
         const data = await TemModel.findById(id).lean(); // Correctly find by id
         delete data._id;
         data.id = id;
-        console.log("tem: ", data);
+        // console.log("tem: ", data);
 
         // Save the current temporary management to the permanent Management Model
         const management = new Model(data);
@@ -87,7 +87,7 @@ const deleteDataById = (model) => async (req, res) => {
     const { id } = req.params;
     const Model = mongoose.model(model);
 
-    console.log(id);
+    // console.log(id);
 
     try {
         // Find and delete the object
@@ -133,7 +133,7 @@ const getDataByLastArrayIndex = (model) => async (req, res) => {
         // Assuming the array field in the model is named 'dataArray'
         const result = await Model.findOne({}, { dataArray: -1 }); // Use -1 for last element
 
-        console.log(result);
+        // console.log(result);
 
         // Check if result exists before accessing its properties
         if (!result) {
@@ -153,7 +153,7 @@ const getDataByLastArrayIndex = (model) => async (req, res) => {
 const getDataById = (model) => async (req, res) => {
     try {
         const id = req.params.id;
-        console.log("id: ", id);
+        // console.log("id: ", id);
 
         const Model = mongoose.model(model);
 

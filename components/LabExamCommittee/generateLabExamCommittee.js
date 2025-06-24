@@ -45,17 +45,17 @@ const createLabExamCommitteeDatabase = async (newExamComitteeMatrix, getYear, ge
 
         // Save the new Exam Committee
         const savedExamCommittee = await newExamCommittee.save();
-        console.log('ExamCommittee saved');
+        // console.log('ExamCommittee saved');
 
         // Check if the total number of objects exceeds 10
         const countDatabase = await LabExamCommittee.countDocuments();
-        console.log("Document count: ", countDatabase);
+        // console.log("Document count: ", countDatabase);
 
         if (countDatabase > 10) {
             // Find and delete the oldest Exam Committee based on the createdAt
             const oldestExamCommittee = await LabExamCommittee.findOne();
             await ExamCommittee.findByIdAndDelete(oldestExamCommittee._id);
-            console.log('Oldest Exam Committee deleted');
+            // console.log('Oldest Exam Committee deleted');
         }
 
         return savedExamCommittee._id;
