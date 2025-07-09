@@ -442,10 +442,14 @@ const buildRoutineMatrix = (routineMatrix, roomTimeSlots, coursesDetails, allRoo
         const term = courseDetails.course.term;
         const credit = Math.ceil(parseFloat(courseDetails.course.credit));
         
-        if(courseDetails['teacher'] === undefined) {
-            console.log(courseDetails);
+        // if(courseDetails['teacher'] === undefined) {
+        //     console.log(courseDetails);
+        // }
+        if(courseDetails.teacher === undefined || courseDetails.teacher.teacherCode === '') {
+            continue;
         }
         let teacherCode = courseDetails.teacher.teacherCode;
+
         let teacher2Code = '';
         if (courseDetails.hasOwnProperty('teacher2')) {
             teacher2Code = courseDetails.teacher2.teacherCode;
