@@ -81,14 +81,27 @@ app.post("/", async (req, res) => {
 
 app.get("/", async (req, res) => {
     try {
-        // Retrieve all teachers from the MongoDB database
-        const users = await Teacher.find({});
-        res.json({ success: true, data: users }); // Send the users as a JSON response
-    } catch (error) {
+        const teachers = await Teacher.find().sort({ firstName: 1, lastName: 1 });
+
+        console.log("Teachers fetched successfully:", teachers);
+
+        res.send({ success: true, data: teachers });
+    } catch (e) {
         console.error("An error occurred in teachers get function:", error);
-        res.send({ success: false, error: "Internal Server Error" });
+        res.send({ success: false, error: "Failed to fetch teachers", e });
     }
 });
+
+// app.get("/", async (req, res) => {
+//     try {
+//         // Retrieve all teachers from the MongoDB database
+//         const users = await Teacher.find({});
+//         res.json({ success: true, data: users }); // Send the users as a JSON response
+//     } catch (error) {
+//         console.error("An error occurred in teachers get function:", error);
+//         res.send({ success: false, error: "Internal Server Error" });
+//     }
+// });
 
 app.get('/by-email/:email', async (req, res) => {
     const email = req.params.email;

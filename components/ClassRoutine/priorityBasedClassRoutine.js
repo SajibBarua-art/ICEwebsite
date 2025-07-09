@@ -69,7 +69,7 @@ app.post('/', async(req, res) => {
             return;
         }
 
-        const teachersInfo = await Teacher.find({}).lean(); // Use .lean() to get plain JavaScript objects
+        const teachersInfo = await Teacher.find().sort({ firstName: 1, lastName: 1 }); // Use .lean() to get plain JavaScript objects
         const coursesInfo = await CourseDetails.find({}).lean();
         const timeSlot = await TimeSlot.find({}).lean();
         const room = await Room.find({}).lean();
