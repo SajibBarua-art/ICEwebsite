@@ -38,12 +38,16 @@ const routineSchema = new mongoose.Schema({
                 totalStudents: String
             }
         ]
+    },
+    timeslot: {
+        type: Array,
+        required: true
     }
 });
 
 const Routine = mongoose.model('routine', routineSchema);
 
-const createRoutineDatabase = async (routineMatrix, yearTerm, teachersName, getYear, getSemester, getDate, getRoutineDetails) => {
+const createRoutineDatabase = async (routineMatrix, yearTerm, teachersName, getYear, getSemester, getDate, getRoutineDetails, timeslot) => {
     try {
         // Create a new routine object
         const newRoutine = new Routine({
@@ -53,7 +57,8 @@ const createRoutineDatabase = async (routineMatrix, yearTerm, teachersName, getY
             year: getYear,
             semester: getSemester,
             classStartDate: getDate,
-            routineDetails: getRoutineDetails
+            routineDetails: getRoutineDetails,
+            timeslot: timeslot
         });
 
         // console.log(getYear, getSemester);
@@ -227,7 +232,8 @@ app.post('/', async (req, res) => {
             year,
             semester,
             classStartDate,
-            routineDetails
+            routineDetails,
+            timeslot: timeSlots
         }
         res.json({ success: true, data });
     } catch (error) {
@@ -241,7 +247,7 @@ app.post('/data', async (req, res) => {
     try {
         const { data } = req.body;
 
-        const result = await createRoutineDatabase(data.overall, data.yearTerm, data.routineTeachersName, data.year, data.semester, data.classStartDate, data.routineDetails);
+        const result = await createRoutineDatabase(data.overall, data.yearTerm, data.routineTeachersName, data.year, data.semester, data.classStartDate, data.routineDetails, data.timeslot);
         // console.log(data);
         res.json({ success: true, data: result });
     } catch (error) {

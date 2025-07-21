@@ -267,8 +267,11 @@ app.post('/', async(req, res) => {
             yearTerm,
             routineTeachersName: teachersName,
             year,
-            semester
+            semester,
+            timeslot: timeSlots
         }
+
+        console.log("data: ", data);
 
         res.json({ success: true, data });
     } catch (err) {
@@ -277,7 +280,7 @@ app.post('/', async(req, res) => {
 });
 
 const buildTeacherAllocationByDay = (totalDay, totalYear, totalTerm) => {
-    console.log("totalDay: ", totalDay, "totalYear: ", totalYear, "totalTerm: ", totalTerm);
+    // console.log("totalDay: ", totalDay, "totalYear: ", totalYear, "totalTerm: ", totalTerm);
 
     let isTeacherAllocated = new Array(totalDay + 5);
     for(let day = 0; day <= totalDay + 2; day++) {
@@ -299,7 +302,7 @@ const divideBySlots = (rooms, timeslots, totalDay, isLab, indexIncrement, alloca
     let inc = 1; if (isLab) inc = 2;
     const timeslotLength = timeslots.length - 1; // Exclude lunch hour
 
-    console.log("rooms: ", rooms);
+    // console.log("rooms: ", rooms);
 
     for (let roomIndex = 0; roomIndex < rooms.length; roomIndex++) {
         for (let slotIndex = inc - 1; slotIndex < timeslotLength; slotIndex += inc) {
@@ -344,9 +347,9 @@ const divideBySlots = (rooms, timeslots, totalDay, isLab, indexIncrement, alloca
     // console.log("clab: ", isComputerLab);
 
     // console.log("computerAvoidedSlots: ", computerAvoidedSlots);
-    console.log("after creation of roomTimeSlots");
-    console.log("roomTimeSlots: ", roomTimeSlots.length);
-    console.log(roomTimeSlots);
+    // console.log("after creation of roomTimeSlots");
+    // console.log("roomTimeSlots: ", roomTimeSlots.length);
+    // console.log(roomTimeSlots);
 
     return roomTimeSlots;
 }
@@ -356,8 +359,8 @@ const buildRandomRoutineMatrix = (routineMatrix, roomTimeSlots, coursesDetails, 
 
     // console.log("teacherAllocationByDay: ", teacherAllocationByDay);
 
-    console.log("roomTimeSlots: ", roomTimeSlots.length);
-    console.log(roomTimeSlots);
+    // console.log("roomTimeSlots: ", roomTimeSlots.length);
+    // console.log(roomTimeSlots);
 
 
     let slotIndex = 0, cnt = 0;
@@ -412,7 +415,7 @@ const buildRandomRoutineMatrix = (routineMatrix, roomTimeSlots, coursesDetails, 
                 if (curSlotIndex === roomTimeSlots.length) {
                     console.log({ success: false, error: `Not enough slots for ${type} room! Please add a room for ${type}.`});
                     
-                    console.log("course Allocation: ", courseAllocation);
+                    // console.log("course Allocation: ", courseAllocation);
                     
                     return { success: false, error: `Not enough slots for ${type} room! Try again to generate routine.` };
                 }
@@ -460,7 +463,7 @@ const buildRandomRoutineMatrix = (routineMatrix, roomTimeSlots, coursesDetails, 
         slotIndex++; cnt++;
     }
 
-    console.log("course Allocation: ", courseAllocation);
+    // console.log("course Allocation: ", courseAllocation);
 
     return { success: true };
 }

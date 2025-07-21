@@ -83,7 +83,7 @@ app.get("/", async (req, res) => {
     try {
         const teachers = await Teacher.find().sort({ firstName: 1, lastName: 1 });
 
-        console.log("Teachers fetched successfully:", teachers);
+        // console.log("Teachers fetched successfully:", teachers);
 
         res.send({ success: true, data: teachers });
     } catch (e) {

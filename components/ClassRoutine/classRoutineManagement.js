@@ -38,6 +38,10 @@ const routineManagementSchema = new mongoose.Schema({
         type: Date,
         default: Date.now,
     },
+    timeslot: {
+        type: Array,
+        required: true
+    }
 });
 
 mongoose.model('RoutineManagement', routineManagementSchema);
